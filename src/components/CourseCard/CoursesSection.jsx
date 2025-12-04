@@ -87,10 +87,16 @@ export default function CoursesSection() {
             )}
 
             {!loading && !error && courses.length === 0 && (
-                <div className="alert alert-info">
-                    <span>No courses found.</span>
+                <div className="rounded-xl border border-primary/20 bg-base-200 p-6 text-center">
+                    <h3 className="text-lg font-semibold text-primary">
+                        No courses found
+                    </h3>
+                    <p className="mt-1 text-base-content/70">
+                        Try adjusting your search or filters.
+                    </p>
                 </div>
             )}
+
 
             {!loading && !error && courses.length > 0 && (
                 <CoursesGrid courses={courses} />
