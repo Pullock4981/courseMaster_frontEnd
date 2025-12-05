@@ -134,6 +134,4 @@ For complete API documentation with request/response formats, see [courseMaster_
 
 The frontend can be deployed to:
 - **Netlify**
-- Any static hosting service
 
-Make sure to set the `VITE_API_BASE_URL` environment variable in your deployment platform.
