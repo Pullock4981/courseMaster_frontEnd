@@ -1,12 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createCourseAsync } from "../../../store/slices/adminSlice";
-import { useNavigate } from "react-router-dom";
+import { fetchCourseById } from "../../../store/slices/coursesSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { updateCourseAsync } from "../../../store/slices/adminSlice";
 
-export default function CreateCourse() {
-    const navigate = useNavigate();
+export default function EditCourse() {
+    const { id } = useParams();
     const dispatch = useDispatch();
-    const { creating, success, error } = useSelector((state) => state.admin);
+    const navigate = useNavigate();
+
+    const { currentCourse, detailLoading } = useSelector((state) => state.courses);
+    const { creating, error } = useSelector((state) => state.admin);
 
     const [form, setForm] = useState({
         title: "",
@@ -15,45 +19,71 @@ export default function CreateCourse() {
         price: 0,
         category: "",
         tags: "",
+        batches: [],
+        syllabus: [],
     });
+
+    useEffect(() => {
+        if (!currentCourse || currentCourse._id !== id) {
+            dispatch(fetchCourseById(id));
+        }
+    }, [dispatch, id, currentCourse]);
+
+    useEffect(() => {
+        if (currentCourse) {
+            setForm({
+                title: currentCourse.title || "",
+                description: currentCourse.description || "",
+                instructorName: currentCourse.instructorName || "",
+                price: currentCourse.price || 0,
+                category: currentCourse.category || "",
+                tags: (currentCourse.tags || []).join(", "),
+                batches: currentCourse.batches || [],
+                syllabus: currentCourse.syllabus || [],
+            });
+        }
+    }, [currentCourse]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm({
-            ...form,
-            [name]: name === "price" ? Number(value) : value,
-        });
+        setForm((s) => ({ ...s, [name]: name === "price" ? Number(value) : value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
         const payload = {
-            ...form,
+            title: form.title,
+            description: form.description,
+            instructorName: form.instructorName,
+            price: form.price,
+            category: form.category,
             tags: form.tags
                 .split(",")
                 .map((t) => t.trim())
                 .filter((t) => t),
+            batches: form.batches,
+            syllabus: form.syllabus,
         };
 
-        dispatch(createCourseAsync(payload)).then((result) => {
-            if (!result.payload?.message && !error) {
-                setTimeout(() => navigate("/admin/courses"), 1500);
+        dispatch(updateCourseAsync({ id, data: payload })).then((res) => {
+            if (!res.error) {
+                navigate("/admin/courses");
             }
         });
     };
 
-    if (success) {
+    if (detailLoading) {
         return (
-            <div className="alert alert-success">
-                <span>{success}</span>
+            <div className="flex justify-center py-12">
+                <span className="loading loading-spinner loading-lg"></span>
             </div>
         );
     }
 
     return (
         <div className="max-w-2xl">
-            <h1 className="text-2xl font-bold mb-6">Create New Course</h1>
+            <h1 className="text-2xl font-bold mb-6">Edit Course</h1>
 
             {error && (
                 <div className="alert alert-error mb-4">
@@ -163,12 +193,13 @@ export default function CreateCourse() {
                         {creating ? (
                             <>
                                 <span className="loading loading-spinner"></span>
-                                Creating...
+                                Updating...
                             </>
                         ) : (
-                            "Create Course"
+                            "Update Course"
                         )}
                     </button>
+
                     <button
                         type="button"
                         onClick={() => navigate("/admin/courses")}

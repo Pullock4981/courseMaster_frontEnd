@@ -4,6 +4,7 @@ import MainLayout from "./layouts/MainLayout";
 // public pages
 import Home from "./pages/Home/Home";
 import CourseDetails from "./pages/CousrseDetails/CourseDetails";
+import CoursePlayer from "./pages/CoursePlayer/CoursePlayer";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -11,27 +12,11 @@ import AdminDashboard from "./pages/admin/components/AdminDashboard";
 import AdminOverview from "./pages/admin/pages/AdminOverview";
 import ManageCourses from "./pages/admin/pages/ManageCourses";
 import CreateCourse from "./pages/admin/pages/CreateCourse";
+import EditCourse from "./pages/admin/pages/EditCourse";
 import ManageUsers from "./pages/admin/pages/ManageUsers";
 import NotFound from "./pages/NotFound/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
-// import CourseDetails from "./pages/CourseDetails/CourseDetails";
-// import Login from "./pages/Login/Login";
-// import Register from "./pages/Register/Register";
-// import NotFound from "./pages/NotFound/NotFound";
-
-// dashboards
-// import StudentDashboard from "./pages/student/StudentDashboard";
-// import AdminDashboard from "./pages/admin/AdminDashboard";
-
-// protected routes
-// import ProtectedRoute from "./routes/ProtectedRoute";
-
-// admin sub-pages (placeholder এখন)
-// import AdminOverview from "./pages/admin/pages/AdminOverview";
-// import ManageCourses from "./pages/admin/pages/ManageCourses";
-// import CreateCourse from "./pages/admin/pages/CreateCourse";
-// import ManageUsers from "./pages/admin/pages/ManageUsers";
-// import CourseDetails from "./pages/CousrseDetails/CourseDetails";
+import AdminRoute from "./routes/AdminRoute";
 
 export default function App() {
   return (
@@ -55,6 +40,16 @@ export default function App() {
             }
           />
 
+          {/* course player (protected) */}
+          <Route
+            path="/courses/:id/player"
+            element={
+              <ProtectedRoute>
+                <CoursePlayer />
+              </ProtectedRoute>
+            }
+          />
+
           {/* admin dashboard with nested routes (protected) */}
           <Route
             path="/admin"
@@ -67,6 +62,7 @@ export default function App() {
             {/* nested admin pages */}
             <Route index element={<AdminOverview />} />
             <Route path="courses" element={<ManageCourses />} />
+            <Route path="courses/edit/:id" element={<EditCourse />} />
             <Route path="courses/create" element={<CreateCourse />} />
             <Route path="users" element={<ManageUsers />} />
           </Route>
