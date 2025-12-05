@@ -1,4 +1,5 @@
 # CourseMaster - Frontend
+Live Link: https://course-master4981.netlify.app/
 
 A modern E-learning platform frontend built with React, Redux Toolkit, and Tailwind CSS.
 
@@ -127,7 +128,6 @@ For complete API documentation with request/response formats, see [courseMaster_
 ## Deployment
 
 The frontend can be deployed to:
-- **Vercel** (recommended)
 - **Netlify**
 - Any static hosting service
 
