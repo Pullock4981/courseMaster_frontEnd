@@ -29,10 +29,10 @@ export default function Register() {
     };
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto px-2 sm:px-4">
             <div className="card bg-base-100 border border-base-300 shadow">
-                <div className="card-body">
-                    <h1 className="text-2xl font-bold text-primary">Create Account</h1>
+                <div className="card-body p-4 sm:p-6">
+                    <h1 className="text-xl sm:text-2xl font-bold text-primary">Create Account</h1>
 
                     {error && (
                         <div className="alert alert-error mt-2">

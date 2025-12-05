@@ -5,8 +5,8 @@ const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${getToken()}` },
 });
 
-export const enrollCourse = (courseId) =>
-    api.post(`/enrollments/${courseId}`, {}, getAuthHeader());
+export const enrollCourse = (courseId, batchId = null) =>
+    api.post(`/enrollments/${courseId}`, batchId ? { batchId } : {}, getAuthHeader());
 
 export const getMyEnrollments = () =>
     api.get("/enrollments/my", getAuthHeader());
@@ -18,9 +18,14 @@ export const completeLesson = (enrollmentId, lessonId) =>
         getAuthHeader()
     );
 
-export const submitAssignment = (courseId, lessonId, answer) =>
-    api.post(
+export const submitAssignment = (courseId, lessonId, answer) => {
+    // Detect if answer is a link
+    const isLink = answer.trim().startsWith("http://") || answer.trim().startsWith("https://");
+    const answerType = isLink ? "link" : "text";
+
+    return api.post(
         "/assignments/submit",
-        { courseId, lessonId, answer, answerType: "text" },
+        { courseId, lessonId, answer, answerType },
         getAuthHeader()
     );
+};

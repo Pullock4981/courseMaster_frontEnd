@@ -3,9 +3,9 @@ import { enrollCourse, getMyEnrollments, completeLesson } from "../../services/e
 
 export const enrollCourseAsync = createAsyncThunk(
     "enrollment/enrollCourse",
-    async (courseId, { rejectWithValue }) => {
+    async ({ courseId, batchId }, { rejectWithValue }) => {
         try {
-            const res = await enrollCourse(courseId);
+            const res = await enrollCourse(courseId, batchId);
             return res.data;
         } catch (err) {
             return rejectWithValue(

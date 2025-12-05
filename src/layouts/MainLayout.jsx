@@ -26,7 +26,7 @@ export default function MainLayout() {
         <div className="min-h-screen flex flex-col">
             <Navbar />
 
-            <main className="flex-1 max-w-6xl mx-auto w-full p-4">
+            <main className="flex-1 max-w-6xl mx-auto w-full px-2 sm:px-4 py-2 sm:py-4">
                 <Outlet />
             </main>
 

@@ -3,6 +3,7 @@ import MainLayout from "./layouts/MainLayout";
 
 // public pages
 import Home from "./pages/Home/Home";
+import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/CousrseDetails/CourseDetails";
 import CoursePlayer from "./pages/CoursePlayer/CoursePlayer";
 import Login from "./pages/Login/Login";
@@ -27,6 +28,7 @@ export default function App() {
         <Route element={<MainLayout />}>
           {/* public */}
           <Route path="/" element={<Home />} />
+          <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<CourseDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

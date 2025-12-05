@@ -33,16 +33,16 @@ export default function AdminOverview() {
     ];
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold">Admin Dashboard Overview</h1>
+        <div className="space-y-4 sm:space-y-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Admin Dashboard Overview</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
                 {stats.map((stat, idx) => (
                     <div key={idx} className={`card shadow-lg ${stat.colorClass}`}>
-                        <div className="card-body">
-                            <div className="text-4xl">{stat.icon}</div>
-                            <h2 className="card-title text-2xl mt-2">{stat.value}</h2>
-                            <p className="opacity-90">{stat.title}</p>
+                        <div className="card-body p-4 sm:p-6">
+                            <div className="text-3xl sm:text-4xl">{stat.icon}</div>
+                            <h2 className="card-title text-xl sm:text-2xl mt-2">{stat.value}</h2>
+                            <p className="opacity-90 text-sm sm:text-base">{stat.title}</p>
                         </div>
                     </div>
                 ))}

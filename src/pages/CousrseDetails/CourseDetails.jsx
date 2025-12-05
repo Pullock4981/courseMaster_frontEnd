@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
     fetchCourseById,
@@ -16,11 +16,19 @@ export default function CourseDetails() {
     const { currentCourse, detailLoading, error: courseError } = useSelector((state) => state.courses);
     const { enrolling, error: enrollError, success, enrollments: myEnrollments } = useSelector((state) => state.enrollment);
     const { user, token, isAuthenticated } = useSelector((state) => state.auth);
+    const [selectedBatchId, setSelectedBatchId] = useState(null);
 
     useEffect(() => {
         dispatch(fetchCourseById(id));
         return () => dispatch(clearCurrentCourse());
     }, [id, dispatch]);
+
+    // Load user if token exists but user is not loaded
+    useEffect(() => {
+        if (token && !user) {
+            dispatch(getMeAsync());
+        }
+    }, [token, user, dispatch]);
 
     const isCreator = user && currentCourse && user._id === currentCourse.instructorId;
     const isAdmin = user && user.role === "admin";
@@ -45,7 +53,9 @@ export default function CourseDetails() {
 
         if (cannotEnroll) return;
 
-        dispatch(enrollCourseAsync(id));
+        // Note: Since batches don't have _id in the model, we pass null
+        // The backend can be updated later to handle batch references properly
+        dispatch(enrollCourseAsync({ courseId: id, batchId: selectedBatchId !== null ? selectedBatchId.toString() : null }));
     };
 
     useEffect(() => {
@@ -77,10 +87,10 @@ export default function CourseDetails() {
     const course = currentCourse;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             <div className="card bg-base-100 border border-base-300 shadow-md">
-                <div className="card-body">
-                    <h1 className="text-4xl font-extrabold text-primary">{course.title}</h1>
+                <div className="card-body p-4 sm:p-6">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary break-words">{course.title}</h1>
 
                     <div className="flex flex-wrap gap-2 mt-3">
                         {course.tags?.map((tag, i) => (
@@ -90,23 +100,28 @@ export default function CourseDetails() {
                         ))}
                     </div>
 
-                    <p className="mt-4 text-lg text-base-content/70">
+                    <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-base-content/70">
                         Instructor: <span className="font-semibold">{course.instructorName}</span>
                     </p>
 
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6">
-                        <p className="text-3xl font-bold text-primary">৳ {course.price}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mt-4 sm:mt-6">
+                        <p className="text-2xl sm:text-3xl font-bold text-primary">৳ {course.price}</p>
 
                         <div>
-                            {cannotEnroll && (
+                            {isAdmin ? (
+                                <Link
+                                    to="/admin/courses"
+                                    className="btn btn-warning gap-2"
+                                >
+                                    📚 Manage Courses
+                                </Link>
+                            ) : cannotEnroll ? (
                                 <div className="mb-2">
                                     <div className="alert alert-info">
-                                        <span>Admins and course creators cannot enroll in this course.</span>
+                                        <span>Course creators cannot enroll in their own courses.</span>
                                     </div>
                                 </div>
-                            )}
-
-                            {success ? (
+                            ) : success ? (
                                 <div className="alert alert-success">
                                     <span>{success}</span>
                                 </div>
@@ -119,7 +134,7 @@ export default function CourseDetails() {
                                     Go to Dashboard
                                 </button>
                             ) : (
-                                <button onClick={handleEnroll} disabled={enrolling || cannotEnroll} className="btn btn-primary gap-2">
+                                <button onClick={handleEnroll} disabled={enrolling} className="btn btn-primary gap-2">
                                     {enrolling ? (
                                         <>
                                             <span className="loading loading-spinner"></span>
@@ -136,16 +151,27 @@ export default function CourseDetails() {
             </div>
 
             <div className="card bg-base-100 border border-base-300 shadow-sm">
-                <div className="card-body">
-                    <h2 className="text-xl font-semibold">Course Description</h2>
-                    <p className="text-base-content/80 leading-relaxed">{course.description}</p>
+                <div className="card-body p-4 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Course Description</h2>
+                    <p className="text-sm sm:text-base text-base-content/80 leading-relaxed">{course.description}</p>
                 </div>
             </div>
 
-            {course.syllabus && course.syllabus.length > 0 && (
+            {/* Show syllabus only if enrolled OR if admin */}
+            {(alreadyEnrolled || isAdmin) && course.syllabus && course.syllabus.length > 0 && (
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
-                    <div className="card-body">
-                        <h2 className="text-xl font-semibold">Course Syllabus</h2>
+                    <div className="card-body p-4 sm:p-6">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+                            <h2 className="text-lg sm:text-xl font-semibold">Course Syllabus</h2>
+                            {isAdmin && (
+                                <Link
+                                    to={`/admin/courses/edit/${id}`}
+                                    className="btn btn-sm btn-warning gap-2"
+                                >
+                                    ✏️ Edit Syllabus
+                                </Link>
+                            )}
+                        </div>
 
                         <div className="space-y-3 mt-4">
                             {course.syllabus.map((module, modIdx) => (
@@ -174,18 +200,76 @@ export default function CourseDetails() {
                 </div>
             )}
 
+            {/* Show message if not enrolled and not admin */}
+            {!alreadyEnrolled && !isAdmin && course.syllabus && course.syllabus.length > 0 && (
+                <div className="card bg-base-100 border border-base-300 shadow-sm">
+                    <div className="card-body">
+                        <h2 className="text-xl font-semibold">Course Syllabus</h2>
+                        <div className="alert alert-info mt-4">
+                            <span>📚 Enroll in this course to view the complete syllabus and access all lessons.</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Show "Add Syllabus" option for admin if no syllabus exists */}
+            {isAdmin && (!course.syllabus || course.syllabus.length === 0) && (
+                <div className="card bg-base-100 border border-base-300 shadow-sm">
+                    <div className="card-body">
+                        <h2 className="text-xl font-semibold">Course Syllabus</h2>
+                        <div className="alert alert-warning mt-4">
+                            <span>📚 No syllabus added yet. Click below to add syllabus and lessons.</span>
+                        </div>
+                        <Link
+                            to={`/admin/courses/edit/${id}`}
+                            className="btn btn-warning mt-4 gap-2"
+                        >
+                            ➕ Add Syllabus
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {course.batches && course.batches.length > 0 && (
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
                     <div className="card-body">
-                        <h2 className="text-xl font-semibold">Available Batches</h2>
+                        <h2 className="text-xl font-semibold mb-4">Available Batches</h2>
                         <div className="space-y-2">
-                            {course.batches.map((batch, idx) => (
-                                <div key={idx} className="flex justify-between items-center p-3 bg-base-200 rounded">
-                                    <span className="font-semibold">{batch.name}</span>
-                                    <span className="text-sm text-base-content/70">Start: {new Date(batch.startDate).toLocaleDateString()}</span>
-                                </div>
-                            ))}
+                            {course.batches.map((batch, idx) => {
+                                // Use index as batch identifier since batches don't have _id
+                                const batchIndex = idx;
+                                const isSelected = selectedBatchId === batchIndex;
+                                return (
+                                    <div
+                                        key={idx}
+                                        onClick={() => setSelectedBatchId(isSelected ? null : batchIndex)}
+                                        className={`flex justify-between items-center p-3 rounded cursor-pointer transition ${isSelected
+                                            ? "bg-primary text-primary-content border-2 border-primary"
+                                            : "bg-base-200 hover:bg-base-300 border-2 border-transparent"
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="radio"
+                                                checked={isSelected}
+                                                onChange={() => setSelectedBatchId(isSelected ? null : batchIndex)}
+                                                className="radio radio-sm"
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <span className="font-semibold">{batch.name}</span>
+                                        </div>
+                                        <span className="text-sm opacity-80">
+                                            {batch.startDate ? `Start: ${new Date(batch.startDate).toLocaleDateString()}` : "No start date"}
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </div>
+                        {selectedBatchId && (
+                            <div className="mt-3 text-sm text-primary">
+                                ✓ Batch selected for enrollment
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

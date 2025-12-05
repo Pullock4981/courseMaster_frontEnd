@@ -84,7 +84,10 @@ export default function EditCourse() {
                 .split(",")
                 .map((t) => t.trim())
                 .filter((t) => t),
-            batches: form.batches,
+            batches: form.batches.map(b => ({
+                ...b,
+                startDate: b.startDate ? new Date(b.startDate) : undefined
+            })),
             syllabus: form.syllabus,
         };
 
@@ -104,8 +107,8 @@ export default function EditCourse() {
     }
 
     return (
-        <div className="max-w-2xl">
-            <h1 className="text-2xl font-bold mb-6">Edit Course</h1>
+        <div className="max-w-4xl w-full">
+            <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Edit Course</h1>
 
             {error && (
                 <div className="alert alert-error mb-4">
@@ -113,7 +116,7 @@ export default function EditCourse() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                 <div className="form-control">
                     <label className="label">
                         <span className="label-text font-semibold">Course Title *</span>
@@ -206,8 +209,344 @@ export default function EditCourse() {
                     </div>
                 </div>
 
+                {/* Syllabus Section */}
+                <div className="divider">Course Syllabus (Modules & Lessons)</div>
+                <div className="space-y-4">
+                    {form.syllabus.map((module, modIdx) => (
+                        <div key={modIdx} className="card bg-base-100 border border-base-300">
+                            <div className="card-body">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-lg">Module {modIdx + 1}</h3>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newSyllabus = form.syllabus.filter((_, i) => i !== modIdx);
+                                            setForm({ ...form, syllabus: newSyllabus });
+                                        }}
+                                        className="btn btn-sm btn-error"
+                                    >
+                                        Remove Module
+                                    </button>
+                                </div>
+
+                                <div className="form-control mb-4">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">Module Title *</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={module.title || ""}
+                                        onChange={(e) => {
+                                            const newSyllabus = [...form.syllabus];
+                                            newSyllabus[modIdx].title = e.target.value;
+                                            setForm({ ...form, syllabus: newSyllabus });
+                                        }}
+                                        placeholder="e.g., Introduction to React"
+                                        className="input input-bordered"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Lessons */}
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-semibold">Lessons</h4>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newSyllabus = [...form.syllabus];
+                                                if (!newSyllabus[modIdx].lessons) {
+                                                    newSyllabus[modIdx].lessons = [];
+                                                }
+                                                newSyllabus[modIdx].lessons.push({
+                                                    title: "",
+                                                    videoUrl: "",
+                                                    assignmentPrompt: "",
+                                                    quiz: [],
+                                                });
+                                                setForm({ ...form, syllabus: newSyllabus });
+                                            }}
+                                            className="btn btn-sm btn-outline"
+                                        >
+                                            + Add Lesson
+                                        </button>
+                                    </div>
+
+                                    {module.lessons?.map((lesson, lesIdx) => (
+                                        <div key={lesIdx} className="card bg-base-200 border border-base-300">
+                                            <div className="card-body">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <h5 className="font-semibold">Lesson {lesIdx + 1}</h5>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newSyllabus = [...form.syllabus];
+                                                            newSyllabus[modIdx].lessons = newSyllabus[modIdx].lessons.filter((_, i) => i !== lesIdx);
+                                                            setForm({ ...form, syllabus: newSyllabus });
+                                                        }}
+                                                        className="btn btn-xs btn-error"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <div className="form-control">
+                                                        <label className="label">
+                                                            <span className="label-text">Lesson Title *</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={lesson?.title || ""}
+                                                            onChange={(e) => {
+                                                                const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                    if (mIdx === modIdx) {
+                                                                        const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                            if (lIdx === lesIdx) {
+                                                                                return { ...les, title: e.target.value };
+                                                                            }
+                                                                            return les;
+                                                                        });
+                                                                        return { ...mod, lessons: newLessons };
+                                                                    }
+                                                                    return mod;
+                                                                });
+                                                                setForm({ ...form, syllabus: newSyllabus });
+                                                            }}
+                                                            placeholder="e.g., Setting up React"
+                                                            className="input input-bordered input-sm"
+                                                            required
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-control">
+                                                        <label className="label">
+                                                            <span className="label-text">Video URL (YouTube) *</span>
+                                                        </label>
+                                                        <input
+                                                            type="url"
+                                                            value={lesson?.videoUrl || ""}
+                                                            onChange={(e) => {
+                                                                const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                    if (mIdx === modIdx) {
+                                                                        const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                            if (lIdx === lesIdx) {
+                                                                                return { ...les, videoUrl: e.target.value };
+                                                                            }
+                                                                            return les;
+                                                                        });
+                                                                        return { ...mod, lessons: newLessons };
+                                                                    }
+                                                                    return mod;
+                                                                });
+                                                                setForm({ ...form, syllabus: newSyllabus });
+                                                            }}
+                                                            placeholder="https://www.youtube.com/watch?v=..."
+                                                            className="input input-bordered input-sm"
+                                                            required
+                                                        />
+                                                    </div>
+
+                                                    {/* Assignment Section */}
+                                                    <div className="form-control">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <label className="label py-0">
+                                                                <span className="label-text font-semibold">Assignment</span>
+                                                            </label>
+                                                            {!lesson?.assignmentPrompt ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        return {
+                                                                                            ...les,
+                                                                                            assignmentPrompt: ""
+                                                                                        };
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    className="btn btn-sm btn-outline btn-secondary"
+                                                                >
+                                                                    + Add Assignment
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        const { assignmentPrompt, ...rest } = les;
+                                                                                        return rest;
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    className="btn btn-sm btn-ghost btn-error"
+                                                                >
+                                                                    Remove Assignment
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {lesson?.assignmentPrompt !== undefined && (
+                                                            <textarea
+                                                                value={lesson?.assignmentPrompt || ""}
+                                                                onChange={(e) => {
+                                                                    const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                        if (mIdx === modIdx) {
+                                                                            const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                if (lIdx === lesIdx) {
+                                                                                    return {
+                                                                                        ...les,
+                                                                                        assignmentPrompt: e.target.value
+                                                                                    };
+                                                                                }
+                                                                                return les;
+                                                                            });
+                                                                            return {
+                                                                                ...mod,
+                                                                                lessons: newLessons
+                                                                            };
+                                                                        }
+                                                                        return mod;
+                                                                    });
+                                                                    setForm({ ...form, syllabus: newSyllabus });
+                                                                }}
+                                                                placeholder="Enter assignment instructions..."
+                                                                className="textarea textarea-bordered textarea-sm w-full"
+                                                                rows="3"
+                                                            />
+                                                        )}
+                                                    </div>
+
+                                                    {/* Quiz Section */}
+                                                    <div className="form-control">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <label className="label">
+                                                                <span className="label-text">Quiz Questions (Optional)</span>
+                                                            </label>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newSyllabus = [...form.syllabus];
+                                                                    if (!newSyllabus[modIdx].lessons[lesIdx].quiz) {
+                                                                        newSyllabus[modIdx].lessons[lesIdx].quiz = [];
+                                                                    }
+                                                                    newSyllabus[modIdx].lessons[lesIdx].quiz.push({
+                                                                        question: "",
+                                                                        options: ["", "", "", ""],
+                                                                        correctIndex: 0,
+                                                                    });
+                                                                    setForm({ ...form, syllabus: newSyllabus });
+                                                                }}
+                                                                className="btn btn-xs btn-outline"
+                                                            >
+                                                                + Add Question
+                                                            </button>
+                                                        </div>
+
+                                                        {lesson.quiz?.map((quizItem, qIdx) => (
+                                                            <div key={qIdx} className="card bg-base-300 border border-base-400 mb-2">
+                                                                <div className="card-body p-3">
+                                                                    <div className="flex justify-between items-center mb-2">
+                                                                        <span className="text-sm font-semibold">Question {qIdx + 1}</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const newSyllabus = [...form.syllabus];
+                                                                                newSyllabus[modIdx].lessons[lesIdx].quiz = newSyllabus[modIdx].lessons[lesIdx].quiz.filter((_, i) => i !== qIdx);
+                                                                                setForm({ ...form, syllabus: newSyllabus });
+                                                                            }}
+                                                                            className="btn btn-xs btn-error"
+                                                                        >
+                                                                            Remove
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <input
+                                                                        type="text"
+                                                                        value={quizItem.question || ""}
+                                                                        onChange={(e) => {
+                                                                            const newSyllabus = [...form.syllabus];
+                                                                            newSyllabus[modIdx].lessons[lesIdx].quiz[qIdx].question = e.target.value;
+                                                                            setForm({ ...form, syllabus: newSyllabus });
+                                                                        }}
+                                                                        placeholder="Enter question"
+                                                                        className="input input-bordered input-sm mb-2"
+                                                                    />
+
+                                                                    <div className="space-y-1">
+                                                                        {quizItem.options?.map((option, optIdx) => (
+                                                                            <div key={optIdx} className="flex gap-2 items-center">
+                                                                                <input
+                                                                                    type="radio"
+                                                                                    name={`quiz-${modIdx}-${lesIdx}-${qIdx}`}
+                                                                                    checked={quizItem.correctIndex === optIdx}
+                                                                                    onChange={() => {
+                                                                                        const newSyllabus = [...form.syllabus];
+                                                                                        newSyllabus[modIdx].lessons[lesIdx].quiz[qIdx].correctIndex = optIdx;
+                                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                                    }}
+                                                                                    className="radio radio-xs"
+                                                                                />
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={option || ""}
+                                                                                    onChange={(e) => {
+                                                                                        const newSyllabus = [...form.syllabus];
+                                                                                        newSyllabus[modIdx].lessons[lesIdx].quiz[qIdx].options[optIdx] = e.target.value;
+                                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                                    }}
+                                                                                    placeholder={`Option ${optIdx + 1}`}
+                                                                                    className="input input-bordered input-sm flex-1"
+                                                                                />
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setForm({
+                                ...form,
+                                syllabus: [...form.syllabus, { title: "", lessons: [] }],
+                            });
+                        }}
+                        className="btn btn-outline btn-sm w-full"
+                    >
+                        + Add Module
+                    </button>
+                </div>
+
                 {/* Batches Section */}
-                <div className="divider">Batches</div>
+                <div className="divider">Batches (Optional)</div>
                 <div className="space-y-3">
                     {form.batches.map((batch, idx) => (
                         <div key={idx} className="card bg-base-100 border border-base-300">
@@ -219,9 +558,9 @@ export default function EditCourse() {
                                         </label>
                                         <input
                                             type="text"
-                                            value={batch.name}
+                                            value={batch.name || ""}
                                             onChange={(e) => updateBatch(idx, "name", e.target.value)}
-                                            placeholder="e.g., Batch 1"
+                                            placeholder="e.g., Batch 1, Jan 2025"
                                             className="input input-bordered input-sm"
                                         />
                                     </div>
@@ -232,7 +571,7 @@ export default function EditCourse() {
                                         </label>
                                         <input
                                             type="date"
-                                            value={batch.startDate ? batch.startDate.split("T")[0] : ""}
+                                            value={batch.startDate ? (typeof batch.startDate === 'string' ? batch.startDate.split("T")[0] : new Date(batch.startDate).toISOString().split("T")[0]) : ""}
                                             onChange={(e) => updateBatch(idx, "startDate", e.target.value)}
                                             className="input input-bordered input-sm"
                                         />

@@ -25,15 +25,20 @@ export default function AdminDashboard() {
     return (
         <AdminRoute me={me}>
             {/* full width override */}
-            <div className="w-full max-w-none flex min-h-[80vh]">
+            <div className="w-full max-w-none flex flex-col lg:flex-row min-h-[80vh]">
 
-                {/* sidebar never shrink */}
-                <div className="shrink-0">
+                {/* sidebar - hidden on mobile, shown via drawer */}
+                <div className="hidden lg:block shrink-0">
+                    <AdminSidebar />
+                </div>
+
+                {/* Mobile drawer toggle button */}
+                <div className="lg:hidden">
                     <AdminSidebar />
                 </div>
 
                 {/* content area */}
-                <main className="flex-1 p-5 bg-base-100">
+                <main className="flex-1 p-2 sm:p-4 lg:p-5 bg-base-100 w-full">
                     <Outlet />
                 </main>
 

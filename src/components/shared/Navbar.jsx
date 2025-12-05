@@ -53,7 +53,6 @@ export default function Navbar() {
                     <ul className="menu menu-horizontal gap-1">
                         <li><NavLink className={navLinkClass} to="/">Home</NavLink></li>
                         <li><NavLink className={navLinkClass} to="/courses">Courses</NavLink></li>
-                        <li><NavLink className={navLinkClass} to="/about">About</NavLink></li>
 
                         {/* ✅ Dashboard only when logged in */}
                         {token && me && (
@@ -137,7 +136,6 @@ export default function Navbar() {
                         >
                             <li><NavLink className={navLinkClass} to="/">Home</NavLink></li>
                             <li><NavLink className={navLinkClass} to="/courses">Courses</NavLink></li>
-                            <li><NavLink className={navLinkClass} to="/about">About</NavLink></li>
 
                             {/* ✅ Dashboard only when logged in */}
                             {token && me && (
