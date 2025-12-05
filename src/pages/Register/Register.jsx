@@ -5,9 +5,10 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Register() {
     const navigate = useNavigate();
 
-    const [form, setForm] = useState({ name: "", email: "", password: "" });
+    const [form, setForm] = useState({ name: "", email: "", password: "", adminKey: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showAdminKey, setShowAdminKey] = useState(false);
 
     const handleChange = (e) =>
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,7 +19,17 @@ export default function Register() {
             setLoading(true);
             setError(null);
 
-            await registerUser(form);
+            // Only send adminKey if it's provided
+            const payload = {
+                name: form.name,
+                email: form.email,
+                password: form.password,
+            };
+            if (form.adminKey.trim()) {
+                payload.adminKey = form.adminKey.trim();
+            }
+
+            await registerUser(payload);
 
             navigate("/login");
         } catch (err) {
@@ -67,6 +78,39 @@ export default function Register() {
                             className="input input-bordered w-full"
                             required
                         />
+
+                        {/* Admin Registration Key (Optional) */}
+                        <div className="form-control">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="label py-0">
+                                    <span className="label-text text-xs sm:text-sm">Admin Registration (Optional)</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAdminKey(!showAdminKey)}
+                                    className="btn btn-xs btn-ghost"
+                                >
+                                    {showAdminKey ? "Hide" : "Show"}
+                                </button>
+                            </div>
+                            {showAdminKey && (
+                                <input
+                                    name="adminKey"
+                                    type="password"
+                                    value={form.adminKey}
+                                    onChange={handleChange}
+                                    placeholder="Enter admin registration key"
+                                    className="input input-bordered w-full input-sm"
+                                />
+                            )}
+                            {showAdminKey && (
+                                <label className="label py-0">
+                                    <span className="label-text-alt text-xs opacity-70">
+                                        Only required for admin account creation
+                                    </span>
+                                </label>
+                            )}
+                        </div>
 
                         <button
                             disabled={loading}

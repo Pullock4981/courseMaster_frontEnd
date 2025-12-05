@@ -1,10 +1,12 @@
-# Course Master - Frontend
+# CourseMaster - Frontend
 
 A modern E-learning platform frontend built with React, Redux Toolkit, and Tailwind CSS.
 
-## Project Description
+## Project Name & Description
 
-Course Master is a full-featured E-learning platform where students can browse, purchase, and consume courses. The frontend provides an intuitive interface for students to enroll in courses, watch video lectures, complete assignments, and take quizzes. Administrators can manage courses, track enrollments, and review assignments through a dedicated admin dashboard.
+**CourseMaster** is a full-featured E-learning platform where students can browse, purchase, and consume courses. The frontend provides an intuitive interface for students to enroll in courses, watch video lectures, complete assignments, and take quizzes. Administrators can manage courses, track enrollments, review assignments, and view analytics through a dedicated admin dashboard.
+
+This is the frontend application of the CourseMaster platform, built with modern React technologies and responsive design principles.
 
 ## Technology Stack
 
@@ -42,11 +44,17 @@ Course Master is a full-featured E-learning platform where students can browse, 
 
 ## Environment Variables
 
-Create a `.env` file with the following variables:
+Create a `.env` file in the root directory with the following variables (see `.env.example` for reference):
 
+```env
+# Backend API Base URL
+VITE_API_BASE_URL=http://localhost:5000/api
+# For production, use your deployed backend URL:
+# VITE_API_BASE_URL=https://course-master-backend-ochre.vercel.app/api
 ```
-VITE_API_BASE_URL=https://course-master-backend-ochre.vercel.app/api
-```
+
+**Required Variables:**
+- `VITE_API_BASE_URL` - The base URL of the backend API (required)
 
 ## Project Structure
 
@@ -97,7 +105,18 @@ src/
 
 ## API Integration
 
-The frontend communicates with the backend API. See the backend README for API documentation.
+The frontend communicates with the backend API. All API endpoints are documented in the backend README.
+
+### Key API Endpoints Used:
+
+- **Authentication**: `/api/auth/register`, `/api/auth/login`, `/api/auth/me`
+- **Courses**: `/api/courses` (GET all, GET by ID)
+- **Enrollments**: `/api/enrollments/:courseId` (POST), `/api/enrollments/my` (GET)
+- **Assignments**: `/api/assignments/submit` (POST), `/api/assignments/my` (GET), `/api/assignments/stats` (GET)
+- **Quizzes**: `/api/quizzes/submit` (POST), `/api/quizzes/my` (GET), `/api/quizzes/stats` (GET)
+- **Admin**: `/api/admin/courses`, `/api/admin/enrollments`, `/api/admin/assignments`, `/api/admin/analytics`
+
+For complete API documentation with request/response formats, see [courseMaster_Backend/README.md](../courseMaster_Backend/README.md).
 
 ## Development
 
