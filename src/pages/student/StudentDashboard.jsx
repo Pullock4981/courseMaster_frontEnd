@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyEnrollments } from "../../store/slices/enrollmentSlice";
-import { fetchCourseById } from "../../store/slices/coursesSlice";
 import { Link } from "react-router-dom";
 import { getQuizStats } from "../../services/quiz.api";
 import { getAssignmentStats } from "../../services/assignment.api";
@@ -10,64 +9,84 @@ import { getCourseById } from "../../services/courses.api";
 export default function StudentDashboard() {
     const dispatch = useDispatch();
     const { enrollments, loading, error } = useSelector((state) => state.enrollment);
-    const { courses, currentCourse } = useSelector((state) => state.courses);
+    const { currentCourse } = useSelector((state) => state.courses);
 
     const [expandedCourse, setExpandedCourse] = useState(null);
-    const [courseStats, setCourseStats] = useState({}); // { courseId: { quizStats, assignmentStats, courseData } }
+    const [courseStats, setCourseStats] = useState({}); // { courseId: { quizStats, assignmentStats, courseData, lessonMap } }
     const [loadingStats, setLoadingStats] = useState({});
+
+    // Cache for lesson title lookups to avoid repeated loops
+    const lessonTitleCache = useRef({});
 
     useEffect(() => {
         dispatch(fetchMyEnrollments());
     }, [dispatch]);
 
-    // Refresh stats when component becomes visible (user returns from course player)
-    useEffect(() => {
-        const handleFocus = () => {
-            if (expandedCourse) {
-                // Refresh stats for the expanded course when user returns
-                handleRefreshStats(expandedCourse);
+    // Create lesson title lookup map from course data (optimized)
+    const createLessonMap = (courseData) => {
+        if (!courseData?.syllabus) return {};
+        const map = {};
+        courseData.syllabus.forEach(module => {
+            if (module.lessons) {
+                module.lessons.forEach(lesson => {
+                    map[String(lesson._id)] = lesson.title;
+                });
             }
-        };
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
-    }, [expandedCourse]);
+        });
+        return map;
+    };
 
-    // Helper function to find lesson title from lessonId
-    const getLessonTitle = (courseData, lessonId) => {
-        if (!courseData?.syllabus) return "Lesson";
-        for (const module of courseData.syllabus) {
-            for (const lesson of module.lessons || []) {
-                if (String(lesson._id) === String(lessonId)) {
-                    return lesson.title;
-                }
-            }
+    // Helper function to find lesson title from lessonId (uses cached map)
+    const getLessonTitle = (courseId, lessonId) => {
+        const cacheKey = `${courseId}_${lessonId}`;
+        if (lessonTitleCache.current[cacheKey]) {
+            return lessonTitleCache.current[cacheKey];
+        }
+
+        const stats = courseStats[courseId];
+        if (stats?.lessonMap) {
+            const title = stats.lessonMap[String(lessonId)] || "Lesson";
+            lessonTitleCache.current[cacheKey] = title;
+            return title;
         }
         return "Lesson";
     };
 
-    // Fetch stats for a specific course
+    // Fetch stats for a specific course (optimized)
     const loadCourseStats = async (courseId, forceRefresh = false) => {
-        if (courseStats[courseId] && !forceRefresh) return; // Already loaded
+        // Skip if already loaded and not forcing refresh
+        if (courseStats[courseId] && !forceRefresh) return;
+
+        // Prevent duplicate requests
+        if (loadingStats[courseId]) return;
 
         setLoadingStats(prev => ({ ...prev, [courseId]: true }));
 
         try {
-            // Fetch course details to get lesson titles
-            let courseData = null;
-            try {
-                // Try to get from current course if it matches
-                if (currentCourse?._id === courseId) {
-                    courseData = currentCourse;
-                } else {
-                    // Fetch directly via API for simplicity
-                    const res = await getCourseById(courseId);
-                    courseData = res.data;
+            // Check if course data is already available
+            let courseData = courseStats[courseId]?.courseData;
+
+            // Only fetch course data if not available
+            if (!courseData || forceRefresh) {
+                try {
+                    // Try to get from current course if it matches
+                    if (currentCourse?._id === courseId) {
+                        courseData = currentCourse;
+                    } else {
+                        // Fetch directly via API
+                        const res = await getCourseById(courseId);
+                        courseData = res.data;
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch course:", err);
+                    // Use existing courseData if available, otherwise null
+                    if (!courseData) {
+                        courseData = null;
+                    }
                 }
-            } catch (err) {
-                console.error("Failed to fetch course:", err);
             }
 
-            // Fetch quiz and assignment stats
+            // Fetch quiz and assignment stats in parallel
             const [quizRes, assignmentRes] = await Promise.all([
                 getQuizStats(courseId).catch(err => {
                     console.error("Quiz stats error:", err);
@@ -79,12 +98,16 @@ export default function StudentDashboard() {
                 }),
             ]);
 
+            // Create lesson map for fast lookups
+            const lessonMap = courseData ? createLessonMap(courseData) : {};
+
             setCourseStats(prev => ({
                 ...prev,
                 [courseId]: {
                     quizStats: quizRes.data,
                     assignmentStats: assignmentRes.data,
                     courseData: courseData,
+                    lessonMap: lessonMap,
                 },
             }));
         } catch (err) {
@@ -105,6 +128,13 @@ export default function StudentDashboard() {
 
     // Refresh stats for a course
     const handleRefreshStats = (courseId) => {
+        // Clear cache for this course
+        Object.keys(lessonTitleCache.current).forEach(key => {
+            if (key.startsWith(`${courseId}_`)) {
+                delete lessonTitleCache.current[key];
+            }
+        });
+        // Clear stats and reload
         setCourseStats(prev => {
             const newStats = { ...prev };
             delete newStats[courseId];
@@ -198,8 +228,10 @@ export default function StudentDashboard() {
                                                 <p className="text-sm font-semibold text-base-content/80">Course Progress</p>
                                                 {(() => {
                                                     const completedCount = enrollment.progress?.completedLessons?.length || 0;
-                                                    const courseData = courseStats[courseId]?.courseData;
+                                                    const courseData = stats?.courseData;
                                                     let totalLessons = 0;
+
+                                                    // Calculate total lessons (cached if available)
                                                     if (courseData?.syllabus) {
                                                         courseData.syllabus.forEach(module => {
                                                             if (module.lessons) {
@@ -207,6 +239,7 @@ export default function StudentDashboard() {
                                                             }
                                                         });
                                                     }
+
                                                     if (totalLessons > 0) {
                                                         return (
                                                             <p className="text-xs text-base-content/70 mt-1">
@@ -318,6 +351,7 @@ export default function StudentDashboard() {
                                                                         const assignCount = stats.assignmentStats?.reviewedCount || 0;
                                                                         const total = quizCount + assignCount;
                                                                         if (total === 0) return "N/A";
+                                                                        // Calculate weighted average more efficiently
                                                                         const overall = Math.round((quizAvg * quizCount + assignAvg * assignCount) / total);
                                                                         return `${overall}%`;
                                                                     })()}
@@ -339,7 +373,12 @@ export default function StudentDashboard() {
                                                                 </div>
                                                                 <div className="space-y-2">
                                                                     {stats.quizStats.submissions.map((quiz, idx) => {
-                                                                        const lessonTitle = getLessonTitle(stats.courseData, quiz.lessonId);
+                                                                        const lessonTitle = getLessonTitle(courseId, quiz.lessonId);
+                                                                        // Format date once
+                                                                        const submittedDate = quiz.submittedAt ? new Date(quiz.submittedAt) : null;
+                                                                        const dateStr = submittedDate ? submittedDate.toLocaleDateString() : 'N/A';
+                                                                        const timeStr = submittedDate ? submittedDate.toLocaleTimeString() : '';
+
                                                                         return (
                                                                             <div key={quiz._id || idx} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 p-4 bg-base-100 rounded-lg shadow-sm hover:shadow-md transition">
                                                                                 <div className="flex-1 min-w-0">
@@ -347,9 +386,11 @@ export default function StudentDashboard() {
                                                                                     <p className="text-xs sm:text-sm text-base-content/70 mt-1">
                                                                                         {quiz.score} out of {quiz.total} questions correct
                                                                                     </p>
-                                                                                    <p className="text-xs text-base-content/50 mt-1">
-                                                                                        📅 Submitted: {new Date(quiz.submittedAt).toLocaleDateString()} at {new Date(quiz.submittedAt).toLocaleTimeString()}
-                                                                                    </p>
+                                                                                    {submittedDate && (
+                                                                                        <p className="text-xs text-base-content/50 mt-1">
+                                                                                            📅 Submitted: {dateStr} at {timeStr}
+                                                                                        </p>
+                                                                                    )}
                                                                                 </div>
                                                                                 <div className="text-left sm:text-right">
                                                                                     <p className={`text-2xl sm:text-3xl font-bold ${quiz.percent >= 70 ? 'text-success' : quiz.percent >= 50 ? 'text-warning' : 'text-error'}`}>
@@ -378,19 +419,25 @@ export default function StudentDashboard() {
                                                                 <h3 className="card-title text-base sm:text-lg mb-3 sm:mb-4">📄 Assignment Marks</h3>
                                                                 <div className="space-y-3">
                                                                     {stats.assignmentStats.submissions.map((assignment, idx) => {
-                                                                        const lessonTitle = getLessonTitle(stats.courseData, assignment.lessonId);
+                                                                        const lessonTitle = getLessonTitle(courseId, assignment.lessonId);
+                                                                        // Format dates once
+                                                                        const submittedDate = assignment.submittedAt ? new Date(assignment.submittedAt) : null;
+                                                                        const reviewedDate = assignment.reviewedAt ? new Date(assignment.reviewedAt) : null;
+
                                                                         return (
                                                                             <div key={assignment._id || idx} className="card bg-base-100">
                                                                                 <div className="card-body p-3 sm:p-4">
                                                                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-2">
                                                                                         <div className="flex-1 min-w-0">
                                                                                             <p className="font-semibold text-sm sm:text-base break-words">{lessonTitle}</p>
-                                                                                            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
-                                                                                                Submitted: {new Date(assignment.submittedAt).toLocaleDateString()}
-                                                                                            </p>
-                                                                                            {assignment.status === "reviewed" && assignment.reviewedAt && (
+                                                                                            {submittedDate && (
+                                                                                                <p className="text-xs sm:text-sm text-base-content/70 mt-1">
+                                                                                                    Submitted: {submittedDate.toLocaleDateString()}
+                                                                                                </p>
+                                                                                            )}
+                                                                                            {assignment.status === "reviewed" && reviewedDate && (
                                                                                                 <p className="text-xs sm:text-sm text-base-content/70">
-                                                                                                    Reviewed: {new Date(assignment.reviewedAt).toLocaleDateString()}
+                                                                                                    Reviewed: {reviewedDate.toLocaleDateString()}
                                                                                                 </p>
                                                                                             )}
                                                                                         </div>
