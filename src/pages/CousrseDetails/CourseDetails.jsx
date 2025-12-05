@@ -1,41 +1,50 @@
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
     fetchCourseById,
     clearCurrentCourse,
 } from "../../store/slices/coursesSlice";
-import {
-    enrollCourseAsync,
-    clearSuccess,
-    clearError,
-} from "../../store/slices/enrollmentSlice";
-import { useNavigate } from "react-router-dom";
-import { getToken } from "../../utils/auth";
+import { enrollCourseAsync, clearSuccess } from "../../store/slices/enrollmentSlice";
+import { getMeAsync } from "../../store/slices/authSlice";
 
 export default function CourseDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const token = getToken();
     const dispatch = useDispatch();
 
-    const { currentCourse, detailLoading, error: courseError } = useSelector(
-        (state) => state.courses
-    );
-    const { enrolling, error: enrollError, success } = useSelector(
-        (state) => state.enrollment
-    );
+    const { currentCourse, detailLoading, error: courseError } = useSelector((state) => state.courses);
+    const { enrolling, error: enrollError, success, enrollments: myEnrollments } = useSelector((state) => state.enrollment);
+    const { user, token, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
         dispatch(fetchCourseById(id));
         return () => dispatch(clearCurrentCourse());
     }, [id, dispatch]);
 
+    const isCreator = user && currentCourse && user._id === currentCourse.instructorId;
+    const isAdmin = user && user.role === "admin";
+    const cannotEnroll = isAdmin || isCreator;
+
+    const alreadyEnrolled = !!myEnrollments?.find((e) => e.course?._id === id);
+
     const handleEnroll = async () => {
-        if (!token) {
+        // if user object not present but token exists, attempt to fetch profile
+        if (!user && token) {
+            try {
+                await dispatch(getMeAsync()).unwrap();
+            } catch (err) {
+                // ignore, will redirect to login below
+            }
+        }
+
+        if (!user && !isAuthenticated) {
             navigate("/login");
             return;
         }
+
+        if (cannotEnroll) return;
+
         dispatch(enrollCourseAsync(id));
     };
 
@@ -44,7 +53,7 @@ export default function CourseDetails() {
             const timer = setTimeout(() => {
                 navigate("/student");
                 dispatch(clearSuccess());
-            }, 2000);
+            }, 1500);
             return () => clearTimeout(timer);
         }
     }, [success, navigate, dispatch]);
@@ -88,30 +97,40 @@ export default function CourseDetails() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-6">
                         <p className="text-3xl font-bold text-primary">৳ {course.price}</p>
 
-                        {success ? (
-                            <div className="alert alert-success">
-                                <span>{success}</span>
-                            </div>
-                        ) : enrollError ? (
-                            <div className="alert alert-error">
-                                <span>{enrollError}</span>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={handleEnroll}
-                                disabled={enrolling}
-                                className="btn btn-primary gap-2"
-                            >
-                                {enrolling ? (
-                                    <>
-                                        <span className="loading loading-spinner"></span>
-                                        Enrolling...
-                                    </>
-                                ) : (
-                                    "Enroll Now"
-                                )}
-                            </button>
-                        )}
+                        <div>
+                            {cannotEnroll && (
+                                <div className="mb-2">
+                                    <div className="alert alert-info">
+                                        <span>Admins and course creators cannot enroll in this course.</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {success ? (
+                                <div className="alert alert-success">
+                                    <span>{success}</span>
+                                </div>
+                            ) : enrollError ? (
+                                <div className="alert alert-error">
+                                    <span>{enrollError}</span>
+                                </div>
+                            ) : alreadyEnrolled ? (
+                                <button onClick={() => navigate('/student')} className="btn btn-outline gap-2">
+                                    Go to Dashboard
+                                </button>
+                            ) : (
+                                <button onClick={handleEnroll} disabled={enrolling || cannotEnroll} className="btn btn-primary gap-2">
+                                    {enrolling ? (
+                                        <>
+                                            <span className="loading loading-spinner"></span>
+                                            Enrolling...
+                                        </>
+                                    ) : (
+                                        "Enroll Now"
+                                    )}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,9 +138,7 @@ export default function CourseDetails() {
             <div className="card bg-base-100 border border-base-300 shadow-sm">
                 <div className="card-body">
                     <h2 className="text-xl font-semibold">Course Description</h2>
-                    <p className="text-base-content/80 leading-relaxed">
-                        {course.description}
-                    </p>
+                    <p className="text-base-content/80 leading-relaxed">{course.description}</p>
                 </div>
             </div>
 
@@ -132,35 +149,18 @@ export default function CourseDetails() {
 
                         <div className="space-y-3 mt-4">
                             {course.syllabus.map((module, modIdx) => (
-                                <div
-                                    key={module._id || modIdx}
-                                    className="collapse collapse-arrow border border-base-300"
-                                >
+                                <div key={module._id || modIdx} className="collapse collapse-arrow border border-base-300">
                                     <input type="checkbox" defaultChecked={modIdx === 0} />
-                                    <div className="collapse-title font-semibold bg-base-200 hover:bg-base-300">
-                                        📚 {module.title}
-                                    </div>
+                                    <div className="collapse-title font-semibold bg-base-200 hover:bg-base-300">📚 {module.title}</div>
                                     <div className="collapse-content">
                                         <ul className="space-y-2 pt-4 pl-4">
                                             {module.lessons?.map((lesson, lesIdx) => (
-                                                <li
-                                                    key={lesson._id || lesIdx}
-                                                    className="flex items-start gap-3 p-2 rounded hover:bg-base-200"
-                                                >
-                                                    <span className="badge badge-outline">
-                                                        {lesIdx + 1}
-                                                    </span>
+                                                <li key={lesson._id || lesIdx} className="flex items-start gap-3 p-2 rounded hover:bg-base-200">
+                                                    <span className="badge badge-outline">{lesIdx + 1}</span>
                                                     <div className="flex-1">
                                                         <p className="font-medium">{lesson.title}</p>
                                                         {lesson.videoUrl && (
-                                                            <a
-                                                                href={lesson.videoUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-primary text-sm hover:underline"
-                                                            >
-                                                                🎬 Watch Video
-                                                            </a>
+                                                            <a href={lesson.videoUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">🎬 Watch Video</a>
                                                         )}
                                                     </div>
                                                 </li>
@@ -182,9 +182,7 @@ export default function CourseDetails() {
                             {course.batches.map((batch, idx) => (
                                 <div key={idx} className="flex justify-between items-center p-3 bg-base-200 rounded">
                                     <span className="font-semibold">{batch.name}</span>
-                                    <span className="text-sm text-base-content/70">
-                                        Start: {new Date(batch.startDate).toLocaleDateString()}
-                                    </span>
+                                    <span className="text-sm text-base-content/70">Start: {new Date(batch.startDate).toLocaleDateString()}</span>
                                 </div>
                             ))}
                         </div>

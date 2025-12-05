@@ -37,9 +37,9 @@ export default function AdminSidebar() {
             <Item to="/admin" label="Overview" Icon={LayoutDashboard} end />
             <Item to="/admin/courses" label="Manage Courses" Icon={BookOpen} />
             <Item to="/admin/courses/create" label="Add Course" Icon={PlusCircle} />
-            <Item to="/admin/users" label="Manage Users" Icon={Users} />
+            <Item to="/admin/enrollments" label="Enrollments" Icon={Users} />
             <Item to="/admin/assignments" label="Assignments" Icon={ClipboardList} />
-            <Item to="/admin/quizzes" label="Quizzes" Icon={HelpCircle} />
+            <Item to="/admin/users" label="Manage Users" Icon={Users} />
         </aside>
     );
 }

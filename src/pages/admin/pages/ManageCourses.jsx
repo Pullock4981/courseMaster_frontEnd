@@ -1,17 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCourses, setPage } from "../../../store/slices/coursesSlice";
-import {
-    deleteCourseAsync,
-    clearSuccess,
-} from "../../../store/slices/adminSlice";
+import { deleteCourseAsync, clearSuccess } from "../../../store/slices/adminSlice";
 import { Link } from "react-router-dom";
 
 export default function ManageCourses() {
     const dispatch = useDispatch();
-    const { courses, totalPages, page, loading } = useSelector(
-        (state) => state.courses
-    );
+    const { courses, totalPages, page, loading } = useSelector((state) => state.courses);
     const { success, error } = useSelector((state) => state.admin);
 
     useEffect(() => {
@@ -63,7 +58,8 @@ export default function ManageCourses() {
                 <div className="alert">No courses found</div>
             ) : (
                 <>
-                    <div className="overflow-x-auto border border-base-300 rounded-lg">
+                    {/* Table for md+ */}
+                    <div className="hidden md:block overflow-x-auto border border-base-300 rounded-lg">
                         <table className="table w-full">
                             <thead className="bg-base-200">
                                 <tr>
@@ -77,20 +73,13 @@ export default function ManageCourses() {
                             <tbody>
                                 {courses.map((course) => (
                                     <tr key={course._id} className="hover:bg-base-100">
-                                        <td className="max-w-xs truncate font-semibold">
-                                            {course.title}
-                                        </td>
+                                        <td className="max-w-xs truncate font-semibold">{course.title}</td>
                                         <td>{course.instructorName}</td>
                                         <td>৳{course.price}</td>
                                         <td>{course.category || "-"}</td>
                                         <td className="space-x-2">
                                             <Link to={`/admin/courses/edit/${course._id}`} className="btn btn-sm btn-warning">Edit</Link>
-                                            <button
-                                                onClick={() => handleDelete(course._id)}
-                                                className="btn btn-sm btn-error"
-                                            >
-                                                Delete
-                                            </button>
+                                            <button onClick={() => handleDelete(course._id)} className="btn btn-sm btn-error">Delete</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -98,22 +87,41 @@ export default function ManageCourses() {
                         </table>
                     </div>
 
+                    {/* Cards for small screens */}
+                    <div className="md:hidden space-y-3">
+                        {courses.map((course) => (
+                            <div key={course._id} className="card bg-base-100 shadow-sm border border-base-200">
+                                <div className="card-body">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="font-semibold text-lg">{course.title}</div>
+                                            <div className="text-sm text-base-content/70">{course.instructorName}</div>
+                                            <div className="text-sm text-base-content/70">{course.category || "-"}</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-bold">৳{course.price}</div>
+                                            <div className="mt-2 space-x-2">
+                                                <Link to={`/admin/courses/edit/${course._id}`} className="btn btn-xs btn-warning">Edit</Link>
+                                                <button onClick={() => handleDelete(course._id)} className="btn btn-xs btn-error">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                     {totalPages > 1 && (
                         <div className="flex justify-center gap-2 mt-6">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                                (pageNum) => (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => dispatch(setPage(pageNum))}
-                                        className={`btn btn-sm ${page === pageNum
-                                            ? "btn-primary"
-                                            : "btn-outline"
-                                            }`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                )
-                            )}
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => dispatch(setPage(pageNum))}
+                                    className={`btn btn-sm ${page === pageNum ? "btn-primary" : "btn-outline"}`}
+                                >
+                                    {pageNum}
+                                </button>
+                            ))}
                         </div>
                     )}
                 </>

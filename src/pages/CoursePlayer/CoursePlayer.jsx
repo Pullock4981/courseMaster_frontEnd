@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCourseById } from "../../store/slices/coursesSlice";
-import { completeLessonAsync } from "../../store/slices/enrollmentSlice";
-import { getMyEnrollments } from "../../services/enrollment.api";
+import { completeLessonAsync, fetchMyEnrollments } from "../../store/slices/enrollmentSlice";
+import { getMyEnrollments, submitAssignment } from "../../services/enrollment.api";
 
 export default function CoursePlayer() {
     const { id } = useParams();
@@ -37,12 +37,27 @@ export default function CoursePlayer() {
             currentCourse?.syllabus[selectedModule]?.lessons[selectedLesson];
         if (!currentLesson) return;
 
-        dispatch(
-            completeLessonAsync({
-                enrollmentId: enrollment._id,
-                lessonId: currentLesson._id,
-            })
-        );
+        try {
+            const result = await dispatch(
+                completeLessonAsync({
+                    enrollmentId: enrollment._id,
+                    lessonId: currentLesson._id,
+                })
+            ).unwrap();
+
+            if (result) setEnrollment(result);
+            else {
+                // fallback: re-fetch
+                const res = await getMyEnrollments();
+                const userEnroll = res.data.find((e) => e.course?._id === id);
+                setEnrollment(userEnroll);
+            }
+
+            // refresh global enrollments for dashboard
+            dispatch(fetchMyEnrollments());
+        } catch (err) {
+            console.error("Failed to mark lesson complete:", err);
+        }
     };
 
     if (loading) {
@@ -95,9 +110,10 @@ export default function CoursePlayer() {
 
                             <button
                                 onClick={handleMarkComplete}
-                                className="btn btn-success mt-4"
+                                disabled={!!enrollment?.progress?.completedLessons?.includes(lesson?._id)}
+                                className={`btn ${enrollment?.progress?.completedLessons?.includes(lesson?._id) ? "btn-disabled" : "btn-success"} mt-4`}
                             >
-                                ✓ Mark as Complete
+                                {enrollment?.progress?.completedLessons?.includes(lesson?._id) ? "Completed ✓" : "✓ Mark as Complete"}
                             </button>
                         </div>
                     </div>
@@ -129,8 +145,8 @@ export default function CoursePlayer() {
                                         setSelectedLesson(0);
                                     }}
                                     className={`w-full text-left font-semibold p-2 rounded transition ${selectedModule === modIdx
-                                            ? "bg-primary text-primary-content"
-                                            : "bg-base-200 hover:bg-base-300"
+                                        ? "bg-primary text-primary-content"
+                                        : "bg-base-200 hover:bg-base-300"
                                         }`}
                                 >
                                     📚 {mod.title}
@@ -143,8 +159,8 @@ export default function CoursePlayer() {
                                                 key={lesIdx}
                                                 onClick={() => setSelectedLesson(lesIdx)}
                                                 className={`w-full text-left text-sm p-2 rounded transition ${selectedLesson === lesIdx
-                                                        ? "bg-secondary text-secondary-content"
-                                                        : "hover:bg-base-200"
+                                                    ? "bg-secondary text-secondary-content"
+                                                    : "hover:bg-base-200"
                                                     }`}
                                             >
                                                 {enrollment?.progress?.completedLessons?.includes(

@@ -90,8 +90,17 @@ const enrollmentSlice = createSlice({
             .addCase(completeLessonAsync.pending, (state) => {
                 state.error = null;
             })
-            .addCase(completeLessonAsync.fulfilled, (state) => {
+            .addCase(completeLessonAsync.fulfilled, (state, action) => {
                 state.success = "Lesson marked complete!";
+                const updated = action.payload;
+                if (!updated) return;
+                const idx = state.enrollments.findIndex((e) => e._id === updated._id);
+                if (idx !== -1) {
+                    state.enrollments[idx] = updated;
+                } else {
+                    // safe fallback
+                    state.enrollments.push(updated);
+                }
             })
             .addCase(completeLessonAsync.rejected, (state, action) => {
                 state.error = action.payload;

@@ -22,3 +22,6 @@ export const getEnrollments = (params) =>
 
 export const getAssignments = () =>
     api.get("/admin/assignments", getAuthHeader());
+
+export const reviewAssignment = (id, payload) =>
+    api.patch(`/admin/assignments/${id}/review`, payload, getAuthHeader());

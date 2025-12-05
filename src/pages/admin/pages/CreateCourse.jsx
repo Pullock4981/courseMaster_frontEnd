@@ -15,6 +15,7 @@ export default function CreateCourse() {
         price: 0,
         category: "",
         tags: "",
+        batches: [],
     });
 
     const handleChange = (e) => {
@@ -22,6 +23,28 @@ export default function CreateCourse() {
         setForm({
             ...form,
             [name]: name === "price" ? Number(value) : value,
+        });
+    };
+
+    const addBatch = () => {
+        setForm((s) => ({
+            ...s,
+            batches: [...s.batches, { name: "", startDate: "" }],
+        }));
+    };
+
+    const removeBatch = (idx) => {
+        setForm((s) => ({
+            ...s,
+            batches: s.batches.filter((_, i) => i !== idx),
+        }));
+    };
+
+    const updateBatch = (idx, field, value) => {
+        setForm((s) => {
+            const newBatches = [...s.batches];
+            newBatches[idx] = { ...newBatches[idx], [field]: value };
+            return { ...s, batches: newBatches };
         });
     };
 
@@ -34,6 +57,7 @@ export default function CreateCourse() {
                 .split(",")
                 .map((t) => t.trim())
                 .filter((t) => t),
+            batches: form.batches,
         };
 
         dispatch(createCourseAsync(payload)).then((result) => {
@@ -152,6 +176,59 @@ export default function CreateCourse() {
                             className="input input-bordered"
                         />
                     </div>
+                </div>
+
+                {/* Batches Section */}
+                <div className="divider">Batches (Optional)</div>
+                <div className="space-y-3">
+                    {form.batches.map((batch, idx) => (
+                        <div key={idx} className="card bg-base-100 border border-base-300">
+                            <div className="card-body">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Batch Name</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={batch.name}
+                                            onChange={(e) => updateBatch(idx, "name", e.target.value)}
+                                            placeholder="e.g., Batch 1, Jan 2025"
+                                            className="input input-bordered input-sm"
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Start Date</span>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={batch.startDate}
+                                            onChange={(e) => updateBatch(idx, "startDate", e.target.value)}
+                                            className="input input-bordered input-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => removeBatch(idx)}
+                                    className="btn btn-sm btn-error mt-2"
+                                >
+                                    Remove Batch
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
+                    <button
+                        type="button"
+                        onClick={addBatch}
+                        className="btn btn-outline btn-sm"
+                    >
+                        + Add Batch
+                    </button>
                 </div>
 
                 <div className="flex gap-3 pt-6">

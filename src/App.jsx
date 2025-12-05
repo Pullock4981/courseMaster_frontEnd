@@ -11,12 +11,13 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import AdminDashboard from "./pages/admin/components/AdminDashboard";
 import AdminOverview from "./pages/admin/pages/AdminOverview";
 import ManageCourses from "./pages/admin/pages/ManageCourses";
+import Enrollments from "./pages/admin/pages/Enrollments";
+import Assignments from "./pages/admin/pages/Assignments";
 import CreateCourse from "./pages/admin/pages/CreateCourse";
 import EditCourse from "./pages/admin/pages/EditCourse";
 import ManageUsers from "./pages/admin/pages/ManageUsers";
 import NotFound from "./pages/NotFound/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import AdminRoute from "./routes/AdminRoute";
 
 export default function App() {
   return (
@@ -64,6 +65,8 @@ export default function App() {
             <Route path="courses" element={<ManageCourses />} />
             <Route path="courses/edit/:id" element={<EditCourse />} />
             <Route path="courses/create" element={<CreateCourse />} />
+            <Route path="enrollments" element={<Enrollments />} />
+            <Route path="assignments" element={<Assignments />} />
             <Route path="users" element={<ManageUsers />} />
           </Route>
 
