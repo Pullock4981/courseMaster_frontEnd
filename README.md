@@ -5,6 +5,9 @@ Video link: https://drive.google.com/file/d/1vjMrBxr0-7xqjxMX2EBEBw30D_av1pOu/vi
 
 A modern E-learning platform frontend built with React, Redux Toolkit, and Tailwind CSS.
 
+Admin email: admin@coursemaster.com
+Pass: admin123
+
 ## Project Name & Description
 
 **CourseMaster** is a full-featured E-learning platform where students can browse, purchase, and consume courses. The frontend provides an intuitive interface for students to enroll in courses, watch video lectures, complete assignments, and take quizzes. Administrators can manage courses, track enrollments, review assignments, and view analytics through a dedicated admin dashboard.
