@@ -1,43 +1,61 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
     LayoutDashboard,
     BookOpen,
     PlusCircle,
     Users,
     ClipboardList,
-    HelpCircle,
+    BarChart3,
     Menu,
     X,
 } from "lucide-react";
 
 export default function AdminSidebar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const location = useLocation();
 
-    const linkClass = ({ isActive }) =>
-        isActive
-            ? "bg-primary text-black font-semibold rounded-lg"
-            : "text-gray-800 font-medium hover:bg-primary/10 hover:text-primary rounded-lg";
+    const Item = ({ to, label, Icon, end = true, onClick, showLabel = true }) => {
+        const linkClass = ({ isActive: navIsActive }) => {
+            // Custom active check for routes with children
+            let isActive = navIsActive;
 
-    const Item = ({ to, label, Icon, end, onClick }) => (
-        <NavLink
-            to={to}
-            end={end}
-            onClick={onClick}
-            className={linkClass + " flex items-center gap-3 px-3 py-2"}
-        >
-            <Icon className="w-5 h-5 shrink-0" />
-            <span className="hidden lg:inline">{label}</span>
-        </NavLink>
-    );
+            if (to === '/admin/courses' && !end) {
+                // For "Manage Courses", only highlight if we're exactly on /admin/courses
+                // Not on /admin/courses/create or /admin/courses/edit/:id
+                isActive = location.pathname === '/admin/courses' &&
+                    !location.pathname.startsWith('/admin/courses/create') &&
+                    !location.pathname.startsWith('/admin/courses/edit/');
+            }
+
+            const baseClasses = "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200";
+            if (isActive) {
+                return `${baseClasses} bg-primary text-primary-content font-semibold shadow-md`;
+            }
+            return `${baseClasses} text-gray-800 font-medium hover:bg-primary/10 hover:text-primary`;
+        };
+
+        return (
+            <NavLink
+                to={to}
+                end={end}
+                onClick={onClick}
+                className={linkClass}
+            >
+                <Icon className="w-5 h-5 shrink-0" />
+                {showLabel && <span className="text-sm sm:text-base">{label}</span>}
+            </NavLink>
+        );
+    };
 
     const menuItems = [
         { to: "/admin", label: "Overview", Icon: LayoutDashboard, end: true },
-        { to: "/admin/courses", label: "Manage Courses", Icon: BookOpen },
-        { to: "/admin/courses/create", label: "Add Course", Icon: PlusCircle },
-        { to: "/admin/enrollments", label: "Enrollments", Icon: Users },
-        { to: "/admin/assignments", label: "Assignments", Icon: ClipboardList },
-        { to: "/admin/users", label: "Manage Users", Icon: Users },
+        { to: "/admin/courses", label: "Manage Courses", Icon: BookOpen, end: false },
+        { to: "/admin/courses/create", label: "Add Course", Icon: PlusCircle, end: true },
+        { to: "/admin/enrollments", label: "Enrollments", Icon: Users, end: true },
+        { to: "/admin/assignments", label: "Assignments", Icon: ClipboardList, end: true },
+        { to: "/admin/analytics", label: "Analytics", Icon: BarChart3, end: true },
+        { to: "/admin/users", label: "Manage Users", Icon: Users, end: true },
     ];
 
     return (
@@ -80,6 +98,7 @@ export default function AdminSidebar() {
                                 Icon={item.Icon}
                                 end={item.end}
                                 onClick={() => setMobileMenuOpen(false)}
+                                showLabel={true}
                             />
                         ))}
                     </aside>

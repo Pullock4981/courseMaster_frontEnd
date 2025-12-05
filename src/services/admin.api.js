@@ -25,3 +25,6 @@ export const getAssignments = () =>
 
 export const reviewAssignment = (id, payload) =>
     api.patch(`/admin/assignments/${id}/review`, payload, getAuthHeader());
+
+export const getAnalytics = () =>
+    api.get("/admin/analytics", getAuthHeader());

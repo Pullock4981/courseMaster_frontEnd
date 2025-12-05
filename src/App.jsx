@@ -14,6 +14,7 @@ import AdminOverview from "./pages/admin/pages/AdminOverview";
 import ManageCourses from "./pages/admin/pages/ManageCourses";
 import Enrollments from "./pages/admin/pages/Enrollments";
 import Assignments from "./pages/admin/pages/Assignments";
+import Analytics from "./pages/admin/pages/Analytics";
 import CreateCourse from "./pages/admin/pages/CreateCourse";
 import EditCourse from "./pages/admin/pages/EditCourse";
 import ManageUsers from "./pages/admin/pages/ManageUsers";
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="courses/create" element={<CreateCourse />} />
             <Route path="enrollments" element={<Enrollments />} />
             <Route path="assignments" element={<Assignments />} />
+            <Route path="analytics" element={<Analytics />} />
             <Route path="users" element={<ManageUsers />} />
           </Route>
 
