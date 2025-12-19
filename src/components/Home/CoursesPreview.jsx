@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { getCourses } from "../../services/courses.api";
 import CoursesGrid from "../CourseCard/CoursesGrid";
 
 export default function CoursesPreview() {
+    const { user } = useSelector((state) => state.auth);
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -31,7 +33,7 @@ export default function CoursesPreview() {
         <div className="space-y-6 sm:space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+                    <h2 className="page-heading mb-2">
                         Featured Courses
                     </h2>
                     <p className="text-base-content/70 text-sm sm:text-base">
@@ -72,13 +74,22 @@ export default function CoursesPreview() {
             {!loading && !error && courses.length > 0 && (
                 <>
                     <CoursesGrid courses={courses} />
-                    <div className="flex justify-center pt-4">
-                        <Link
-                            to="/courses"
-                            className="btn btn-outline btn-wide"
-                        >
-                            View More Courses
-                        </Link>
+                    <div className="flex justify-center gap-3 pt-4">
+                        {user?.role === "admin" ? (
+                            <Link
+                                to="/admin/courses"
+                                className="btn btn-primary btn-wide"
+                            >
+                                Manage Courses
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/courses"
+                                className="btn btn-outline btn-wide"
+                            >
+                                View More Courses
+                            </Link>
+                        )}
                     </div>
                 </>
             )}

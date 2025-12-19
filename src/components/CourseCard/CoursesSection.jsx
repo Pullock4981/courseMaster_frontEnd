@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { getCourses } from "../../services/courses.api";
 import CoursesFilters from "./CoursesFilters";
 import CoursesGrid from "./CoursesGrid";
 import CoursesPagination from "./CoursesPagination";
 
 export default function CoursesSection() {
+    const { user } = useSelector((state) => state.auth);
     const [courses, setCourses] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -60,10 +63,6 @@ export default function CoursesSection() {
 
     return (
         <div className="space-y-6">
-            {/* header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <h1 className="text-2xl font-bold">All Courses</h1>
-            </div>
 
             <CoursesFilters
                 search={search} setSearch={setSearch}
@@ -99,7 +98,19 @@ export default function CoursesSection() {
 
 
             {!loading && !error && courses.length > 0 && (
-                <CoursesGrid courses={courses} />
+                <>
+                    <CoursesGrid courses={courses} />
+                    {user?.role === "admin" && (
+                        <div className="flex justify-center pt-4">
+                            <Link
+                                to="/admin/courses"
+                                className="btn btn-primary btn-wide"
+                            >
+                                Manage Courses
+                            </Link>
+                        </div>
+                    )}
+                </>
             )}
 
             <CoursesPagination

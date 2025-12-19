@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { getToken } from "../../../utils/auth";
 import { getMe } from "../../../services/auth.api";
 import AdminRoute from "../../../routes/AdminRoute";
 import AdminSidebar from "./AdminSidebar";
@@ -15,9 +14,12 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const loadMe = async () => {
-            const token = getToken();
-            const res = await getMe(token);
-            setMe(res.data);
+            try {
+                const res = await getMe();
+                setMe(res.data);
+            } catch (err) {
+                console.error("Failed to load user:", err);
+            }
         };
         loadMe();
     }, []);

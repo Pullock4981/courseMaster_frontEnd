@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createCourse, updateCourse, deleteCourse, getEnrollments, getAssignments } from "../../services/admin.api";
+import { createCourse, updateCourse, deleteCourse, getAllEnrollments, getAllAssignments } from "../../services/admin.api";
 
 export const createCourseAsync = createAsyncThunk(
     "admin/createCourse",
@@ -41,7 +41,7 @@ export const fetchEnrollments = createAsyncThunk(
     "admin/fetchEnrollments",
     async (params = {}, { rejectWithValue }) => {
         try {
-            const res = await getEnrollments(params);
+            const res = await getAllEnrollments(params);
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to load enrollments");
@@ -53,7 +53,7 @@ export const fetchAssignments = createAsyncThunk(
     "admin/fetchAssignments",
     async (_, { rejectWithValue }) => {
         try {
-            const res = await getAssignments();
+            const res = await getAllAssignments();
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || "Failed to load assignments");

@@ -90,11 +90,14 @@ export default function CourseDetails() {
         <div className="space-y-4 sm:space-y-6">
             <div className="card bg-base-100 border border-base-300 shadow-md">
                 <div className="card-body p-4 sm:p-6">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary break-words">{course.title}</h1>
+                    <h1 className="page-heading break-words">{course.title}</h1>
 
                     <div className="flex flex-wrap gap-2 mt-3">
                         {course.tags?.map((tag, i) => (
-                            <span key={i} className="badge badge-outline border-primary text-primary">
+                            <span key={i} className="badge badge-outline" style={{
+                                borderColor: '#78A083',
+                                color: '#78A083'
+                            }}>
                                 {tag}
                             </span>
                         ))}
@@ -105,15 +108,20 @@ export default function CourseDetails() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mt-4 sm:mt-6">
-                        <p className="text-2xl sm:text-3xl font-bold text-primary">৳ {course.price}</p>
+                        <p className="text-2xl sm:text-3xl font-bold" style={{ 
+                            background: 'linear-gradient(135deg, #78A083, #50727B)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                        }}>৳ {course.price}</p>
 
                         <div>
                             {isAdmin ? (
                                 <Link
-                                    to="/admin/courses"
-                                    className="btn btn-warning gap-2"
+                                    to={`/admin/courses/edit/${id}`}
+                                    className="btn btn-primary gap-2"
                                 >
-                                    📚 Manage Courses
+                                    📚 Manage Course
                                 </Link>
                             ) : cannotEnroll ? (
                                 <div className="mb-2">
@@ -152,7 +160,7 @@ export default function CourseDetails() {
 
             <div className="card bg-base-100 border border-base-300 shadow-sm">
                 <div className="card-body p-4 sm:p-6">
-                    <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Course Description</h2>
+                    <h2 className="page-heading-h2 mb-2 sm:mb-3">Course Description</h2>
                     <p className="text-sm sm:text-base text-base-content/80 leading-relaxed">{course.description}</p>
                 </div>
             </div>
@@ -162,11 +170,11 @@ export default function CourseDetails() {
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
                     <div className="card-body p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-                            <h2 className="text-lg sm:text-xl font-semibold">Course Syllabus</h2>
+                            <h2 className="page-heading-h2">Course Syllabus</h2>
                             {isAdmin && (
                                 <Link
                                     to={`/admin/courses/edit/${id}`}
-                                    className="btn btn-sm btn-warning gap-2"
+                                    className="btn btn-sm btn-primary gap-2"
                                 >
                                     ✏️ Edit Syllabus
                                 </Link>
@@ -185,9 +193,21 @@ export default function CourseDetails() {
                                                     <span className="badge badge-outline">{lesIdx + 1}</span>
                                                     <div className="flex-1">
                                                         <p className="font-medium">{lesson.title}</p>
-                                                        {lesson.videoUrl && (
-                                                            <a href={lesson.videoUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">🎬 Watch Video</a>
-                                                        )}
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {lesson.videoUrl && (
+                                                                <a href={lesson.videoUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">🎬 Watch Video</a>
+                                                            )}
+                                                            {lesson.liveClassLink && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="badge badge-info badge-sm">🔴 Live Class</span>
+                                                                    {lesson.liveClassDate && (
+                                                                        <span className="text-xs text-base-content/70">
+                                                                            {new Date(lesson.liveClassDate).toLocaleString()}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </li>
                                             ))}
@@ -204,7 +224,7 @@ export default function CourseDetails() {
             {!alreadyEnrolled && !isAdmin && course.syllabus && course.syllabus.length > 0 && (
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
                     <div className="card-body">
-                        <h2 className="text-xl font-semibold">Course Syllabus</h2>
+                        <h2 className="page-heading-h2">Course Syllabus</h2>
                         <div className="alert alert-info mt-4">
                             <span>📚 Enroll in this course to view the complete syllabus and access all lessons.</span>
                         </div>
@@ -216,13 +236,13 @@ export default function CourseDetails() {
             {isAdmin && (!course.syllabus || course.syllabus.length === 0) && (
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
                     <div className="card-body">
-                        <h2 className="text-xl font-semibold">Course Syllabus</h2>
+                        <h2 className="page-heading-h2">Course Syllabus</h2>
                         <div className="alert alert-warning mt-4">
                             <span>📚 No syllabus added yet. Click below to add syllabus and lessons.</span>
                         </div>
                         <Link
                             to={`/admin/courses/edit/${id}`}
-                            className="btn btn-warning mt-4 gap-2"
+                            className="btn btn-primary mt-4 gap-2"
                         >
                             ➕ Add Syllabus
                         </Link>
@@ -233,7 +253,7 @@ export default function CourseDetails() {
             {course.batches && course.batches.length > 0 && (
                 <div className="card bg-base-100 border border-base-300 shadow-sm">
                     <div className="card-body">
-                        <h2 className="text-xl font-semibold mb-4">Available Batches</h2>
+                        <h2 className="page-heading-h2 mb-4">Available Batches</h2>
                         <div className="space-y-2">
                             {course.batches.map((batch, idx) => {
                                 // Use index as batch identifier since batches don't have _id

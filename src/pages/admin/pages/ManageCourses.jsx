@@ -64,7 +64,7 @@ export default function ManageCourses() {
     return (
         <div className="space-y-4 sm:space-y-5">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                <h1 className="text-xl sm:text-2xl font-bold">Manage Courses</h1>
+                <h1 className="page-heading">Manage Courses</h1>
                 <Link to="/admin/courses/create" className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto">
                     + New Course
                 </Link>

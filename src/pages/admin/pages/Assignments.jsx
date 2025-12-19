@@ -84,7 +84,7 @@ export default function Assignments() {
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold">Assignment Review</h2>
+            <h1 className="page-heading">Assignment Review</h1>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">

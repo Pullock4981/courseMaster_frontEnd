@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 import { getToken, clearToken } from "../../utils/auth";
 import { getMe } from "../../services/auth.api";
 
@@ -25,7 +26,7 @@ export default function Navbar() {
         const loadMe = async () => {
             if (!token) return setMe(null);
             try {
-                const res = await getMe(token);
+                const res = await getMe();
                 setMe(res.data);
             } catch {
                 clearToken();
@@ -70,6 +71,8 @@ export default function Navbar() {
 
                 {/* RIGHT */}
                 <div className="navbar-end gap-2">
+                    {/* Theme Toggle */}
+                    <ThemeToggle />
 
                     {/* Desktop buttons if NOT logged in */}
                     {!token && (

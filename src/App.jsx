@@ -18,6 +18,7 @@ import Analytics from "./pages/admin/pages/Analytics";
 import CreateCourse from "./pages/admin/pages/CreateCourse";
 import EditCourse from "./pages/admin/pages/EditCourse";
 import ManageUsers from "./pages/admin/pages/ManageUsers";
+import VideoClasses from "./pages/admin/pages/VideoClasses";
 import NotFound from "./pages/NotFound/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="courses" element={<ManageCourses />} />
             <Route path="courses/edit/:id" element={<EditCourse />} />
             <Route path="courses/create" element={<CreateCourse />} />
+            <Route path="video-classes" element={<VideoClasses />} />
             <Route path="enrollments" element={<Enrollments />} />
             <Route path="assignments" element={<Assignments />} />
             <Route path="analytics" element={<Analytics />} />

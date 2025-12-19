@@ -24,7 +24,7 @@ export default function Enrollments() {
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold">Enrollment Management</h2>
+            <h1 className="page-heading">Enrollment Management</h1>
 
             {/* Filters */}
             <div className="card bg-base-100 shadow-sm">

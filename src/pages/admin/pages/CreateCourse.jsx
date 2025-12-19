@@ -82,7 +82,7 @@ export default function CreateCourse() {
 
     return (
         <div className="max-w-4xl w-full">
-            <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Create New Course</h1>
+            <h1 className="page-heading mb-4 sm:mb-6">Create New Course</h1>
 
             {error && (
                 <div className="alert alert-error mb-4">
@@ -235,6 +235,8 @@ export default function CreateCourse() {
                                                 newSyllabus[modIdx].lessons.push({
                                                     title: "",
                                                     videoUrl: "",
+                                                    liveClassLink: "",
+                                                    liveClassDate: "",
                                                     assignmentPrompt: "",
                                                     quiz: [],
                                                 });
@@ -319,6 +321,116 @@ export default function CreateCourse() {
                                                             className="input input-bordered input-sm"
                                                             required
                                                         />
+                                                    </div>
+
+                                                    {/* Live Class Section */}
+                                                    <div className="form-control">
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <label className="label py-0">
+                                                                <span className="label-text font-semibold">Live Class (Optional)</span>
+                                                            </label>
+                                                            {!lesson?.liveClassLink ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        return {
+                                                                                            ...les,
+                                                                                            liveClassLink: "",
+                                                                                            liveClassDate: ""
+                                                                                        };
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    className="btn btn-sm btn-outline btn-info"
+                                                                >
+                                                                    + Add Live Class
+                                                                </button>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        const { liveClassLink, liveClassDate, ...rest } = les;
+                                                                                        return rest;
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    className="btn btn-sm btn-ghost btn-error"
+                                                                >
+                                                                    Remove Live Class
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {lesson?.liveClassLink !== undefined && (
+                                                            <div className="space-y-2">
+                                                                <input
+                                                                    type="url"
+                                                                    value={lesson?.liveClassLink || ""}
+                                                                    onChange={(e) => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        return {
+                                                                                            ...les,
+                                                                                            liveClassLink: e.target.value
+                                                                                        };
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    placeholder="https://meet.google.com/xxx-xxxx-xxx or https://zoom.us/j/xxxxx"
+                                                                    className="input input-bordered input-sm w-full"
+                                                                />
+                                                                <input
+                                                                    type="datetime-local"
+                                                                    value={lesson?.liveClassDate ? new Date(lesson.liveClassDate).toISOString().slice(0, 16) : ""}
+                                                                    onChange={(e) => {
+                                                                        const newSyllabus = form.syllabus.map((mod, mIdx) => {
+                                                                            if (mIdx === modIdx) {
+                                                                                const newLessons = mod.lessons.map((les, lIdx) => {
+                                                                                    if (lIdx === lesIdx) {
+                                                                                        return {
+                                                                                            ...les,
+                                                                                            liveClassDate: e.target.value ? new Date(e.target.value).toISOString() : ""
+                                                                                        };
+                                                                                    }
+                                                                                    return les;
+                                                                                });
+                                                                                return { ...mod, lessons: newLessons };
+                                                                            }
+                                                                            return mod;
+                                                                        });
+                                                                        setForm({ ...form, syllabus: newSyllabus });
+                                                                    }}
+                                                                    className="input input-bordered input-sm w-full"
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     {/* Assignment Section */}

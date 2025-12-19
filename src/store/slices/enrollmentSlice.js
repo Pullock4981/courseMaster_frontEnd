@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { enrollCourse, getMyEnrollments, completeLesson } from "../../services/enrollment.api";
+import { enrollInCourse, getMyEnrollments, completeLesson } from "../../services/enrollment.api";
 
 export const enrollCourseAsync = createAsyncThunk(
     "enrollment/enrollCourse",
     async ({ courseId, batchId }, { rejectWithValue }) => {
         try {
-            const res = await enrollCourse(courseId, batchId);
+            const res = await enrollInCourse(courseId, batchId);
             return res.data;
         } catch (err) {
             return rejectWithValue(

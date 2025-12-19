@@ -34,7 +34,7 @@ export const getMeAsync = createAsyncThunk(
         try {
             const token = getToken();
             if (!token) throw new Error("No token");
-            const res = await getMe(token);
+            const res = await getMe();
             return res.data;
         } catch (err) {
             clearToken();

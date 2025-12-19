@@ -56,7 +56,7 @@ Create a `.env` file in the root directory with the following variables (see `.e
 # Backend API Base URL
 VITE_API_BASE_URL=http://localhost:5000/api
 # For production, use your deployed backend URL:
-# VITE_API_BASE_URL=https://course-master-backend-ochre.vercel.app/api
+# VITE_API_BASE_URL=http://localhost:5000/api/api
 ```
 
 **Required Variables:**

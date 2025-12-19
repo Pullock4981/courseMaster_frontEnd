@@ -7,6 +7,7 @@ import {
     Users,
     ClipboardList,
     BarChart3,
+    Video,
     Menu,
     X,
 } from "lucide-react";
@@ -20,19 +21,11 @@ export default function AdminSidebar() {
             // Custom active check for routes with children
             let isActive = navIsActive;
 
-            if (to === '/admin/courses' && !end) {
-                // For "Manage Courses", only highlight if we're exactly on /admin/courses
-                // Not on /admin/courses/create or /admin/courses/edit/:id
-                isActive = location.pathname === '/admin/courses' &&
-                    !location.pathname.startsWith('/admin/courses/create') &&
-                    !location.pathname.startsWith('/admin/courses/edit/');
-            }
-
             const baseClasses = "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200";
             if (isActive) {
                 return `${baseClasses} bg-primary text-primary-content font-semibold shadow-md`;
             }
-            return `${baseClasses} text-gray-800 font-medium hover:bg-primary/10 hover:text-primary`;
+            return `${baseClasses} text-base-content font-medium hover:bg-primary/20 hover:text-primary`;
         };
 
         return (
@@ -50,8 +43,8 @@ export default function AdminSidebar() {
 
     const menuItems = [
         { to: "/admin", label: "Overview", Icon: LayoutDashboard, end: true },
-        { to: "/admin/courses", label: "Manage Courses", Icon: BookOpen, end: false },
         { to: "/admin/courses/create", label: "Add Course", Icon: PlusCircle, end: true },
+        { to: "/admin/video-classes", label: "Video Classes", Icon: Video, end: true },
         { to: "/admin/enrollments", label: "Enrollments", Icon: Users, end: true },
         { to: "/admin/assignments", label: "Assignments", Icon: ClipboardList, end: true },
         { to: "/admin/analytics", label: "Analytics", Icon: BarChart3, end: true },
@@ -61,13 +54,13 @@ export default function AdminSidebar() {
     return (
         <>
             {/* Mobile menu button */}
-            <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-base-200 border-b border-base-300 p-2">
+            <div className="lg:hidden fixed top-16 left-0 right-0 z-40 bg-base-200 border-b-2 border-base-300 p-2 shadow-md">
                 <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="btn btn-sm btn-ghost"
+                    className="btn btn-sm btn-ghost text-base-content"
                 >
                     {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                    <span className="ml-2">Admin Menu</span>
+                    <span className="ml-2 font-semibold">Admin Menu</span>
                 </button>
             </div>
 
@@ -78,11 +71,11 @@ export default function AdminSidebar() {
                     onClick={() => setMobileMenuOpen(false)}
                 >
                     <aside
-                        className="bg-base-200 border-r border-base-300 w-64 h-full p-4 space-y-2 overflow-y-auto"
+                        className="bg-base-200 border-r-2 border-base-300 w-64 h-full p-4 space-y-2 overflow-y-auto shadow-xl"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="font-bold text-lg">Admin Menu</h2>
+                            <h2 className="font-bold text-lg text-base-content">Admin Menu</h2>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="btn btn-sm btn-ghost"
@@ -106,7 +99,7 @@ export default function AdminSidebar() {
             )}
 
             {/* Desktop sidebar */}
-            <aside className="hidden lg:block bg-base-200 border-r border-base-300 min-h-screen w-64 p-4 space-y-2 transition-all duration-200">
+            <aside className="hidden lg:block bg-base-200 border-r-2 border-base-300 min-h-screen w-64 p-4 space-y-2 transition-all duration-200 shadow-lg">
                 {menuItems.map((item) => (
                     <Item
                         key={item.to}

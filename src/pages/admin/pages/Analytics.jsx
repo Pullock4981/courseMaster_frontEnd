@@ -61,7 +61,7 @@ export default function Analytics() {
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold">Analytics Dashboard</h2>
+            <h1 className="page-heading">Analytics Dashboard</h1>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -97,7 +97,7 @@ export default function Analytics() {
             {/* Enrollments Over Time Chart */}
             <div className="card bg-base-100 shadow">
                 <div className="card-body p-4 sm:p-6">
-                    <h3 className="card-title text-base sm:text-lg mb-4">Enrollments Over Time (Last 30 Days)</h3>
+                    <h3 className="page-heading-h2 mb-4">Enrollments Over Time (Last 30 Days)</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={data.chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -129,7 +129,7 @@ export default function Analytics() {
             {data.enrollmentsByCourse && data.enrollmentsByCourse.length > 0 && (
                 <div className="card bg-base-100 shadow">
                     <div className="card-body p-4 sm:p-6">
-                        <h3 className="card-title text-base sm:text-lg mb-4">Top Courses by Enrollments</h3>
+                        <h3 className="page-heading-h2 mb-4">Top Courses by Enrollments</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={data.enrollmentsByCourse} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />

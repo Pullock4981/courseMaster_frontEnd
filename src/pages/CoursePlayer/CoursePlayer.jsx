@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCourseById } from "../../store/slices/coursesSlice";
 import { completeLessonAsync, fetchMyEnrollments } from "../../store/slices/enrollmentSlice";
-import { getMyEnrollments, submitAssignment } from "../../services/enrollment.api";
+import { getMyEnrollments } from "../../services/enrollment.api";
+import { submitAssignment } from "../../services/assignment.api";
 import { submitQuiz as submitQuizAPI } from "../../services/quiz.api";
 
 // Helper function to convert YouTube URLs to embed format
@@ -160,6 +161,32 @@ export default function CoursePlayer() {
                         </div>
                     )}
 
+                    {/* Live Class Section */}
+                    {lesson?.liveClassLink && (
+                        <div className="card bg-info/10 border-2 border-info shadow">
+                            <div className="card-body p-3 sm:p-6">
+                                <h3 className="card-title text-info">
+                                    🔴 Live Class Available
+                                </h3>
+                                {lesson.liveClassDate && (
+                                    <p className="text-sm mb-2">
+                                        <strong>Scheduled:</strong> {new Date(lesson.liveClassDate).toLocaleString()}
+                                    </p>
+                                )}
+                                <div className="card-actions justify-end mt-3">
+                                    <a
+                                        href={lesson.liveClassLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-info"
+                                    >
+                                        Join Live Class
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {lesson?.assignmentPrompt && (
                         <AssignmentSubmission
                             courseId={id}
@@ -206,7 +233,12 @@ export default function CoursePlayer() {
                                             {mod.lessons?.map((les, lesIdx) => {
                                                 const hasAssignment = !!les.assignmentPrompt;
                                                 const hasQuiz = les.quiz && les.quiz.length > 0;
+                                                const hasLiveClass = !!les.liveClassLink;
                                                 const isCompleted = enrollment?.progress?.completedLessons?.includes(les._id);
+                                                
+                                                // Check if live class is upcoming
+                                                const isUpcoming = hasLiveClass && les.liveClassDate && new Date(les.liveClassDate) > new Date();
+                                                const liveClassDate = hasLiveClass && les.liveClassDate ? new Date(les.liveClassDate) : null;
 
                                                 return (
                                                     <button
@@ -222,6 +254,9 @@ export default function CoursePlayer() {
                                                             <span className="truncate">{les.title}</span>
                                                         </span>
                                                         <div className="flex items-center gap-1 flex-shrink-0">
+                                                            {hasLiveClass && (
+                                                                <span className="badge badge-xs badge-info" title="Has Live Class">🔴</span>
+                                                            )}
                                                             {hasAssignment && (
                                                                 <span className="badge badge-xs badge-secondary" title="Has Assignment">📝</span>
                                                             )}
@@ -282,7 +317,16 @@ function AssignmentSubmission({ courseId, lessonId, prompt, enrollment, onComple
         setError(null);
 
         try {
-            await submitAssignment(courseId, lessonId, answer.trim());
+            // Detect if answer is a link
+            const isLink = answer.trim().startsWith("http://") || answer.trim().startsWith("https://");
+            const answerType = isLink ? "link" : "text";
+            
+            await submitAssignment({
+                courseId,
+                lessonId,
+                answer: answer.trim(),
+                answerType
+            });
             setSubmitted(true);
 
             // Fetch the updated submission
@@ -551,7 +595,11 @@ function QuizInterface({ quiz, courseId, lessonId, enrollment, onComplete }) {
             // Convert answers object to array format [selectedIndex, selectedIndex, ...]
             const answersArray = quiz.map((_, idx) => answers[idx] ?? -1);
 
-            const response = await submitQuizAPI(courseId, lessonId, answersArray);
+            const response = await submitQuizAPI({
+                courseId,
+                lessonId,
+                answers: answersArray
+            });
             const result = response.data;
 
             setScore(result.percent);

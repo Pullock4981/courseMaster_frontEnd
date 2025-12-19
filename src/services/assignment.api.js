@@ -1,23 +1,20 @@
 import api from "./api";
-import { getToken } from "../utils/auth";
 
-const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${getToken()}` },
-});
+// No need for getToken and getAuthHeader anymore - interceptor handles it!
 
 export const getMyAssignments = (courseId = null) => {
-    const config = {
-        ...getAuthHeader(),
+    return api.get("/assignments/my", {
         params: courseId ? { courseId } : {},
-    };
-    return api.get("/assignments/my", config);
+    });
 };
 
 export const getAssignmentStats = (courseId) => {
-    const config = {
-        ...getAuthHeader(),
+    return api.get("/assignments/stats", {
         params: { courseId },
-    };
-    return api.get("/assignments/stats", config);
+    });
+};
+
+export const submitAssignment = (payload) => {
+    return api.post("/assignments/submit", payload);
 };
 
