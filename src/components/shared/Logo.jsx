@@ -5,7 +5,7 @@ export default function Logo() {
         <Link to="/" className="flex items-center gap-2">
             {/* smaller on mobile, bigger on md+ */}
             <span className="font-extrabold text-primary text-lg md:text-2xl">
-                CourseMaster
+                RootX Academy
             </span>
         </Link>
     );

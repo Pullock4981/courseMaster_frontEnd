@@ -53,7 +53,7 @@ export default function Footer() {
             </div>
 
             <div className="text-center text-sm py-4 bg-base-300/50 text-base-content/70 border-t border-base-300">
-                © {new Date().getFullYear()} CourseMaster. All rights reserved.
+                © {new Date().getFullYear()} RootX Softwares. All rights reserved.
             </div>
         </footer>
     );
