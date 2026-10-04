@@ -95,7 +95,7 @@ export default function Analytics() {
             </div>
 
             {/* Enrollments Over Time Chart */}
-            <div className="card bg-base-100 shadow">
+            <div className="card bg-base-100 shadow overflow-hidden">
                 <div className="card-body p-4 sm:p-6">
                     <h3 className="page-heading-h2 mb-4">Enrollments Over Time (Last 30 Days)</h3>
                     <ResponsiveContainer width="100%" height={300}>

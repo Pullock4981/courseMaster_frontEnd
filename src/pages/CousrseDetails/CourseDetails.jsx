@@ -113,7 +113,7 @@ export default function CourseDetails() {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text'
-                        }}>৳ {course.price}</p>
+                        }}>৳ {course.price * 100}</p>
 
                         <div>
                             {isAdmin ? (

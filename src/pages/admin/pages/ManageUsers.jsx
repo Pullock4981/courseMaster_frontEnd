@@ -213,7 +213,7 @@ export default function ManageUsers() {
                                                 }`}
                                             >
                                                 <td className="font-semibold">{userItem.name}</td>
-                                                <td>{userItem.email}</td>
+                                                <td style={{ color: '#1e293b' }}>{userItem.email}</td>
                                                 <td>
                                                     <span
                                                         className={`badge badge-lg font-semibold ${

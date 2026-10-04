@@ -10,8 +10,8 @@ export default function Navbar() {
     const token = getToken();
     const [me, setMe] = useState(null);
 
-    const navLinkClass = ({ isActive }) =>
-        isActive
+    const navLinkClass = ({ isActive, to }) =>
+        (isActive || window.location.pathname.startsWith("/"))
             ? "text-primary font-semibold"
             : "text-base-content/80 hover:text-primary";
 
@@ -55,8 +55,8 @@ export default function Navbar() {
                         <li><NavLink className={navLinkClass} to="/">Home</NavLink></li>
                         <li><NavLink className={navLinkClass} to="/courses">Courses</NavLink></li>
 
-                        {/* ✅ Dashboard only when logged in */}
-                        {token && me && (
+                        {/* ✅ Dashboard when logged in OR when dev_bypass is active */}
+                        {(token && me) ? (
                             <li>
                                 <NavLink
                                     className={navLinkClass}
@@ -65,7 +65,12 @@ export default function Navbar() {
                                     Dashboard
                                 </NavLink>
                             </li>
-                        )}
+                        ) : (localStorage.getItem("dev_bypass") === "true") ? (
+                            <>
+                                <li><NavLink className={navLinkClass} to="/student">Student Portal</NavLink></li>
+                                <li><NavLink className={navLinkClass} to="/admin">Admin Portal</NavLink></li>
+                            </>
+                        ) : null}
                     </ul>
                 </div>
 
@@ -134,7 +139,7 @@ export default function Navbar() {
                             className="
                 menu menu-sm dropdown-content mt-3 p-3 shadow
                 bg-base-100 rounded-box w-56 border border-base-300
-                items-center text-center
+                items-center text-center max-h-32 overflow-hidden
               "
                         >
                             <li><NavLink className={navLinkClass} to="/">Home</NavLink></li>

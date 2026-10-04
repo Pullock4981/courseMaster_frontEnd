@@ -1,26 +1,36 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import MainLayout from "./layouts/MainLayout";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
-// public pages
+// Public pages - keep these loaded immediately
 import Home from "./pages/Home/Home";
 import Courses from "./pages/Courses/Courses";
 import CourseDetails from "./pages/CousrseDetails/CourseDetails";
-import CoursePlayer from "./pages/CoursePlayer/CoursePlayer";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
-import StudentDashboard from "./pages/student/StudentDashboard";
-import AdminDashboard from "./pages/admin/components/AdminDashboard";
-import AdminOverview from "./pages/admin/pages/AdminOverview";
-import ManageCourses from "./pages/admin/pages/ManageCourses";
-import Enrollments from "./pages/admin/pages/Enrollments";
-import Assignments from "./pages/admin/pages/Assignments";
-import Analytics from "./pages/admin/pages/Analytics";
-import CreateCourse from "./pages/admin/pages/CreateCourse";
-import EditCourse from "./pages/admin/pages/EditCourse";
-import ManageUsers from "./pages/admin/pages/ManageUsers";
-import VideoClasses from "./pages/admin/pages/VideoClasses";
 import NotFound from "./pages/NotFound/NotFound";
-import ProtectedRoute from "./routes/ProtectedRoute";
+
+// Lazy load heavy components for code splitting
+const CoursePlayer = lazy(() => import("./pages/CoursePlayer/CoursePlayer"));
+const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
+const AdminDashboard = lazy(() => import("./pages/admin/components/AdminDashboard"));
+const AdminOverview = lazy(() => import("./pages/admin/pages/AdminOverview"));
+const ManageCourses = lazy(() => import("./pages/admin/pages/ManageCourses"));
+const Enrollments = lazy(() => import("./pages/admin/pages/Enrollments"));
+const Assignments = lazy(() => import("./pages/admin/pages/Assignments"));
+const Analytics = lazy(() => import("./pages/admin/pages/Analytics"));
+const CreateCourse = lazy(() => import("./pages/admin/pages/CreateCourse"));
+const EditCourse = lazy(() => import("./pages/admin/pages/EditCourse"));
+const ManageUsers = lazy(() => import("./pages/admin/pages/ManageUsers"));
+const VideoClasses = lazy(() => import("./pages/admin/pages/VideoClasses"));
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <span className="loading loading-spinner loading-lg"></span>
+  </div>
+);
 
 export default function App() {
   return (
@@ -40,7 +50,9 @@ export default function App() {
             path="/student"
             element={
               <ProtectedRoute>
-                <StudentDashboard />
+                <Suspense fallback={<LoadingSpinner />}>
+                  <StudentDashboard />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -50,7 +62,9 @@ export default function App() {
             path="/courses/:id/player"
             element={
               <ProtectedRoute>
-                <CoursePlayer />
+                <Suspense fallback={<LoadingSpinner />}>
+                  <CoursePlayer />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -60,20 +74,22 @@ export default function App() {
             path="/admin"
             element={
               <ProtectedRoute>
-                <AdminDashboard />
+                <Suspense fallback={<LoadingSpinner />}>
+                  <AdminDashboard />
+                </Suspense>
               </ProtectedRoute>
             }
           >
             {/* nested admin pages */}
-            <Route index element={<AdminOverview />} />
-            <Route path="courses" element={<ManageCourses />} />
-            <Route path="courses/edit/:id" element={<EditCourse />} />
-            <Route path="courses/create" element={<CreateCourse />} />
-            <Route path="video-classes" element={<VideoClasses />} />
-            <Route path="enrollments" element={<Enrollments />} />
-            <Route path="assignments" element={<Assignments />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="users" element={<ManageUsers />} />
+            <Route index element={<Suspense fallback={<LoadingSpinner />}><AdminOverview /></Suspense>} />
+            <Route path="courses" element={<Suspense fallback={<LoadingSpinner />}><ManageCourses /></Suspense>} />
+            <Route path="courses/edit/:id" element={<Suspense fallback={<LoadingSpinner />}><EditCourse /></Suspense>} />
+            <Route path="courses/create" element={<Suspense fallback={<LoadingSpinner />}><CreateCourse /></Suspense>} />
+            <Route path="video-classes" element={<Suspense fallback={<LoadingSpinner />}><VideoClasses /></Suspense>} />
+            <Route path="enrollments" element={<Suspense fallback={<LoadingSpinner />}><Enrollments /></Suspense>} />
+            <Route path="assignments" element={<Suspense fallback={<LoadingSpinner />}><Assignments /></Suspense>} />
+            <Route path="analytics" element={<Suspense fallback={<LoadingSpinner />}><Analytics /></Suspense>} />
+            <Route path="users" element={<Suspense fallback={<LoadingSpinner />}><ManageUsers /></Suspense>} />
           </Route>
 
           {/* 404 */}
